@@ -6,7 +6,7 @@ config = dotenv_values('.env')
 headers = {'Client-Id': config['client_id'], 'Authorization': config['app_access_token']}
 
 def printJson(req):
-    parsed = json.loads(req.text)
+    parsed = json.loads(req)
     print(json.dumps(parsed, indent=4, sort_keys=True))
 
 def getId(req):
@@ -25,11 +25,27 @@ def getFollowers(streamer):
     req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
     return req.json()
 
+def getFollows(follower_id):
+    params = {'from_id': follower_id}
+    req = request.get("https://api.twitch.tv/helix/users/follows?", headers=headers, params=params)
+    return req.json()
 
+def streamerToFollowersToStreamers(streamer):
+    json = getFollowers(streamer)
+    list = []
+    for i in range(0, len(json['data'])):
+        followsJson = getFollows(json['data'][i]['from_id'])
+        for i in range(0, len(followsJson['data'])):
+            alsoFollows = followsJson['data'][i]['to_name']
+            if streamer == alsoFollows: continue
+            list.append(alsoFollows)
+    return list
 
 def main():  
-    json = getFollowers('shroud')
-    print(json['data'][0])
+    streamer = 'TenZ'
+    print(streamerToFollowersToStreamers(streamer))
+
+
 
 
 
