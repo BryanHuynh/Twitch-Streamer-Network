@@ -13,9 +13,8 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 2
+depth = 10
 pbar = tqdm(total = pow(250,depth))
-start = time.time()
 
 headers = {'Client-Id': config['client_id'], 'Authorization': config['app_access_token']}
 
