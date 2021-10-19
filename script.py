@@ -1,8 +1,11 @@
 from dotenv import dotenv_values
 from pprint import pprint as pprint
+from tqdm import tqdm
 import requests as request
 import pandas as pd
 import json 
+import time
+
 
 config = dotenv_values('.env')
 
@@ -10,6 +13,9 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
+depth = 2
+pbar = tqdm(total = pow(250,depth))
+start = time.time()
 
 headers = {'Client-Id': config['client_id'], 'Authorization': config['app_access_token']}
 
@@ -64,7 +70,7 @@ def streamerToFollowersToStreamers(streamer: str):
     if( 'data' not in followers): 
         return []
 
-    for i in range(0, min(len(followers['data']), 10000000)):
+    for i in range(0, len(followers['data'])):
 
         try:
             followsJson = getFollows(followers['data'][i]['from_id'])
@@ -77,14 +83,14 @@ def streamerToFollowersToStreamers(streamer: str):
         except:
             continue
 
-        for i in range(0, min( len(followsJson['data']), 10000000) ):
+        for i in range(0, len(followsJson['data']) ):
 
             try:
                 alsoFollows = followsJson['data'][i]['to_name']
                 
                 if streamer == alsoFollows: continue
                 list.append(alsoFollows)
-
+                pbar.update(1)
             except:
                 continue
     list.sort()
@@ -136,11 +142,12 @@ def countListInstancesOrdered(list: list) -> dict:
 
 def main():  
     streamer = 'TenZ'
-    SFS(streamer, 10)
-    
+    SFS(streamer, depth)
+    pbar.close()
     df = pd.concat(dataframes, ignore_index=True)
     print(df)
     df.to_csv('links3.csv')
+    
 
 if __name__ == '__main__':
     print('start ... \n')
