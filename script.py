@@ -15,8 +15,9 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 1
-pbar = tqdm(total = pow(227,depth))
+depth = 5
+pbar = None
+SFS_count = 0
 
 headers = {'Client-Id': config['client_id'], 'Authorization': config['app_access_token']}
 
@@ -70,7 +71,7 @@ def streamerToFollowersToStreamers(streamer: str):
     list = []
     if( 'data' not in followers):  
         return []
-    # print(len(followers['data']))
+
     for i in range(0, len(followers['data'])):
 
         try:
@@ -85,15 +86,14 @@ def streamerToFollowersToStreamers(streamer: str):
             continue
 
         for i in range(0, len(followsJson['data']) ):
-            
+            pbar.update(1)
             try:
                 alsoFollows = followsJson['data'][i]['to_name']
-                
                 if streamer == alsoFollows: continue
                 list.append(alsoFollows)
-                pbar.update(1)
             except:
                 continue
+            
     list.sort()
     return list
 
@@ -106,6 +106,7 @@ def assignCursorToFollower(follower: int, pagination):
 
 def SFS(start_streamer: str, depth: int):
     if depth == 0: return
+    
     try:
         list = streamerToFollowersToStreamers(start_streamer)
         df_local = loadLinksIntoDataFrame(start_streamer, list)
@@ -146,14 +147,21 @@ def loadInCVS(filepath: str) -> pd.DataFrame:
         return pd.DataFrame({'streamer':df['streamer'], 'Links_To':df['Links_To'], 'count':df['count']})
     else:
         return None
+    
 
 def merge(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
-    for index, row in df1.iterrows():
-        locate = df2[(df2['streamer'] == row['streamer']) & (df2['Links_To'] == row['Links_To'])]
-        if(not locate.empty):
-            df2.loc[locate.index, 'count'] += row['count']
-        else:
-            df2 = df2.append(row)
+    with tqdm(total = df1.shape[0]) as pbar_merge:
+        pbar_merge.set_description("Merging dataframe with existing")
+        for index, row in df1.iterrows():
+            locate = df2[(df2['streamer'] == row['streamer']) & (df2['Links_To'] == row['Links_To'])]
+            if(not locate.empty):
+                df2.loc[locate.index, 'count'] += row['count']
+            else:
+                df2 = df2.append(row)
+            pbar_merge.update(1)
+    pbar_merge.close()
+    print('\n')
+
     return df2
 
 
@@ -162,19 +170,23 @@ def main(args):
 
     streamer = args[0]
     SFS(streamer, depth)
-    df = pd.concat(dataframes, ignore_index=True)
+    pbar.close()
 
+    df = pd.concat(dataframes, ignore_index=True)
     if(previous_data is not None):
         df = merge(df, previous_data)
     
     print(df)
     df.to_csv('links.csv')
+    print(f'\n\nTotal SFS: {SFS_count}')
 
-    pbar.close()
+    
     
 
 if __name__ == '__main__':
     print('start ... \n')
+    pbar = tqdm(total = 1000000000)
+    pbar.set_description("Getting data")
 
     main(sys.argv[1:])
     print('\n... end')
