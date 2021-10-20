@@ -5,6 +5,8 @@ import requests as request
 import pandas as pd
 import json 
 import time
+import os
+import sys, getopt
 
 
 config = dotenv_values('.env')
@@ -13,8 +15,8 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 10
-pbar = tqdm(total = pow(250,depth))
+depth = 1
+pbar = tqdm(total = pow(227,depth))
 
 headers = {'Client-Id': config['client_id'], 'Authorization': config['app_access_token']}
 
@@ -66,9 +68,9 @@ def streamerToFollowersToStreamers(streamer: str):
         assignCursorToStreamer(streamer, followers['pagination'])
 
     list = []
-    if( 'data' not in followers): 
+    if( 'data' not in followers):  
         return []
-
+    # print(len(followers['data']))
     for i in range(0, len(followers['data'])):
 
         try:
@@ -83,7 +85,7 @@ def streamerToFollowersToStreamers(streamer: str):
             continue
 
         for i in range(0, len(followsJson['data']) ):
-
+            
             try:
                 alsoFollows = followsJson['data'][i]['to_name']
                 
@@ -138,17 +140,41 @@ def countListInstancesOrdered(list: list) -> dict:
             checking_count += 1
     return dict
 
+def loadInCVS(filepath: str) -> pd.DataFrame:
+    if(os.path.isfile(filepath)):
+        df = pd.read_csv(filepath)
+        return pd.DataFrame({'streamer':df['streamer'], 'Links_To':df['Links_To'], 'count':df['count']})
+    else:
+        return None
 
-def main():  
-    streamer = 'TenZ'
+def merge(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
+    for index, row in df1.iterrows():
+        locate = df2[(df2['streamer'] == row['streamer']) & (df2['Links_To'] == row['Links_To'])]
+        if(not locate.empty):
+            df2.loc[locate.index, 'count'] += row['count']
+        else:
+            df2 = df2.append(row)
+    return df2
+
+
+def main(args):  
+    previous_data = loadInCVS('links.csv')
+
+    streamer = args[0]
     SFS(streamer, depth)
-    pbar.close()
     df = pd.concat(dataframes, ignore_index=True)
+
+    if(previous_data is not None):
+        df = merge(df, previous_data)
+    
     print(df)
-    df.to_csv('links3.csv')
+    df.to_csv('links.csv')
+
+    pbar.close()
     
 
 if __name__ == '__main__':
     print('start ... \n')
-    main()
+
+    main(sys.argv[1:])
     print('\n... end')
