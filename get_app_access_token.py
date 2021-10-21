@@ -10,5 +10,7 @@ def getToken():
     req = request.post('https://id.twitch.tv/oauth2/token', params=params)
     pprint(req.json())
 
+
+
 if __name__ == '__main__':
     getToken()
