@@ -15,7 +15,7 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 5
+depth = 2
 pbar = None
 SFS_count = 0
 
@@ -39,21 +39,22 @@ def getIdByName(streamer: str) -> int:
 
 def getFollowers(streamer: str) -> dict:
     id = getIdByName(streamer)
-    params = {'to_id': id, }
+    params = {'to_id': id, 'first': 20}
     if( streamer in visitedStreamers ): 
         propigation = visitedStreamers[streamer]['cursor']
-        params.update({'before': propigation})
-
+        params.update({'after': propigation})
+    
     req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
     return req.json()
 
 def getFollows(follower_id: int) -> dict:
-    params = {'from_id': follower_id}
+    params = {'from_id': follower_id, 'first':20}
     # name = getNameByID(follower_id)
     if( follower_id in visitedFollowers ): 
         propigation = visitedFollowers[follower_id]['cursor']
-        params.update({'before': propigation})
+        params.update({'after': propigation})
     req = request.get("https://api.twitch.tv/helix/users/follows?", headers=headers, params=params)
+
     return req.json()
 
 def getNameByID(follower_id: int):
@@ -62,6 +63,13 @@ def getNameByID(follower_id: int):
     #pprint(req.json())
     return req.json()['data'][0]['display_name']
 
+def is_partnered(streamer: str):
+    params = {'login': streamer}
+    req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
+    try:
+        return req.json()['data'][0]['broadcaster_type'] == 'partner'
+    except:
+        return False
 
 def streamerToFollowersToStreamers(streamer: str):
     followers = getFollowers(streamer)
@@ -73,26 +81,30 @@ def streamerToFollowersToStreamers(streamer: str):
         return []
 
     for i in range(0, len(followers['data'])):
-
         try:
             followsJson = getFollows(followers['data'][i]['from_id'])
             if( 'data' not in followsJson ): 
+                print('error 0')
                 continue
             user = followsJson['data'][0]['from_id']
             if('pagination' in followsJson):
                 assignCursorToFollower(user, followsJson['pagination'])
 
         except:
+            print('Error 1')
             continue
 
         for i in range(0, len(followsJson['data']) ):
             pbar.update(1)
             try:
                 alsoFollows = followsJson['data'][i]['to_name']
-                if streamer == alsoFollows: continue
-                list.append(alsoFollows)
             except:
+                print('error 2')
                 continue
+            if streamer == alsoFollows: continue
+            if(not is_partnered(alsoFollows)): continue
+            list.append(alsoFollows)
+
             
     list.sort()
     return list
@@ -160,16 +172,16 @@ def main(args):
     df.to_csv(streamer + '_links.csv')
    
     
+def getToken():
+    params = {'client_id': config['client_id'], 'client_secret': config['client_secret'], 'grant_type': 'client_credentials'}
+    req = request.post('https://id.twitch.tv/oauth2/token', params=params)
+    print(req.json())
+
 
 if __name__ == '__main__':
     print('start ... \n')
-
-    if(depth == 5):
-        pbar = tqdm(total = 2300000)
-    if(depth == 1):
-        pbar = tqdm(total = 500)
-    else:
-        pbar = tqdm(total = 1000000)
+    #getToken()
+    pbar = tqdm(total = 6470)
 
     pbar.set_description("Getting data")
 
