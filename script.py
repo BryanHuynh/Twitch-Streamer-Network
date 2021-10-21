@@ -160,8 +160,11 @@ def loadInCVS(filepath: str) -> pd.DataFrame:
     else:
         return None
     
-
-
+def isStreamer(streamer: str) -> bool:
+    params = {'login': streamer}
+    req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
+    if( 'data' not in req.json() ): return False
+    return True
 
 def main(args):  
     streamer = args[0]
@@ -172,10 +175,7 @@ def main(args):
     df.to_csv(streamer + '_links.csv')
    
     
-def getToken():
-    params = {'client_id': config['client_id'], 'client_secret': config['client_secret'], 'grant_type': 'client_credentials'}
-    req = request.post('https://id.twitch.tv/oauth2/token', params=params)
-    print(req.json())
+
 
 
 if __name__ == '__main__':
@@ -184,6 +184,9 @@ if __name__ == '__main__':
     pbar = tqdm(total = 6470)
 
     pbar.set_description("Getting data")
-
-    main(sys.argv[1:])
+    if(len(sys.argv) > 1 and isStreamer(sys.argv[1])):
+        main(sys.argv[1:])
+    else:
+        print('No or invalid streamer name provided')
+        print('Usage: python3 main.py <streamer_name>')
     print('\n... end')
