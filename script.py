@@ -149,43 +149,28 @@ def loadInCVS(filepath: str) -> pd.DataFrame:
         return None
     
 
-def merge(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
-    with tqdm(total = df1.shape[0]) as pbar_merge:
-        pbar_merge.set_description("Merging dataframe with existing")
-        for index, row in df1.iterrows():
-            locate = df2[(df2['streamer'] == row['streamer']) & (df2['Links_To'] == row['Links_To'])]
-            if(not locate.empty):
-                df2.loc[locate.index, 'count'] += row['count']
-            else:
-                df2 = df2.append(row)
-            pbar_merge.update(1)
-    pbar_merge.close()
-    print('\n')
-
-    return df2
 
 
 def main(args):  
-    previous_data = loadInCVS('links.csv')
-
     streamer = args[0]
     SFS(streamer, depth)
     pbar.close()
-
     df = pd.concat(dataframes, ignore_index=True)
-    if(previous_data is not None):
-        df = merge(df, previous_data)
-    
     print(df)
-    df.to_csv('links.csv')
-    print(f'\n\nTotal SFS: {SFS_count}')
-
-    
+    df.to_csv(streamer + '_links.csv')
+   
     
 
 if __name__ == '__main__':
     print('start ... \n')
-    pbar = tqdm(total = 1000000000)
+
+    if(depth == 5):
+        pbar = tqdm(total = 2300000)
+    if(depth == 1):
+        pbar = tqdm(total = 500)
+    else:
+        pbar = tqdm(total = 1000000)
+
     pbar.set_description("Getting data")
 
     main(sys.argv[1:])
