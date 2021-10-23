@@ -1,6 +1,6 @@
 # To run
 
-python3 script.py <streamer_name>
+`python3 script.py <streamer_name>`
 
 # twitch-network
 
