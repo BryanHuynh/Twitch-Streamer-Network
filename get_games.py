@@ -55,6 +55,7 @@ def method2(streamer: str) -> list:
 
 
 def main():
+    print('If theres an error its like that the website is cutting access. Use VPN as a workaround')
     df = pd.read_csv('./streamers.csv')
     for index, row in df.iterrows():
         print(get_url(row['User']))
