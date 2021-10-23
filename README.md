@@ -1,3 +1,7 @@
+# To run
+
+`python3 script.py <streamer_name>`
+
 # twitch-network
 
 install all the required packages with
