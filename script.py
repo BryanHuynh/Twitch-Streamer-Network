@@ -308,7 +308,6 @@ def main(args):
 
 if __name__ == '__main__':
     print('start ... \n')
-    #getToken()
     pbar = tqdm(total = 2000)
 
     pbar.set_description("Getting data")
