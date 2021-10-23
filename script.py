@@ -11,6 +11,7 @@ import sys, getopt
 import cProfile
 import re
 import pstats
+import time
 
 
 
@@ -43,6 +44,7 @@ def getIdByName(streamer: str) -> int:
     try:
         req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     except Exception as e:
+        time.sleep(2)
         print(e)
         return getIdByName(streamer)
 
@@ -74,6 +76,7 @@ def fill_streamers_json(list: list):
     try:
         req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     except Exception as e:
+        time.sleep(2)
         print(e)
         fill_streamers_json(list)
 
@@ -92,6 +95,7 @@ def getFollowers(streamer: str) -> dict:
     try:
         req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
     except Exception as e:
+        time.sleep(2)
         print(e)
         return getFollowers(streamer)
     
@@ -108,6 +112,7 @@ def getFollows(follower_id: int) -> dict:
     try:
         req = request.get("https://api.twitch.tv/helix/users/follows?", headers=headers, params=params)
     except Exception as e:
+        time.sleep(2)
         print(e)
         return getFollows(follower_id)
     
@@ -119,6 +124,7 @@ def getNameByID(follower_id: int):
     try:
         req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     except Exception as e:
+        time.sleep(2)
         print(e)
         return getNameByID(follower_id)
     
@@ -134,6 +140,7 @@ def is_partnered(streamer: str):
     try:
         req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     except Exception as e:
+        time.sleep(2)
         print(e)
         return is_partnered(streamer)
     
@@ -191,6 +198,7 @@ def getFollowerCount(streamer: str):
     try:
         req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
     except Exception as e:
+        time.sleep(2)
         print(e)
         return getFollowerCount(streamer)
     
@@ -265,6 +273,7 @@ def isStreamer(streamer: str) -> bool:
     try:
         req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     except Exception as e:
+        time.sleep(2)
         print(e)
         return isStreamer(streamer)
 
