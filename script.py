@@ -20,7 +20,7 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 3
+depth = 1
 streamers_json = {}
 streamers_json_by_id = {} 
 pbar = None
@@ -279,7 +279,7 @@ def merge_dataframes_add_V(list_of_dataframes: list) -> pd.DataFrame:
 
     for df in list_of_dataframes:
         ret = merge(ret, df)
-        pprint(ret)
+        # pprint(ret)
     return ret
 
 def merge(df1, df2) -> pd.DataFrame:
@@ -290,19 +290,26 @@ def merge(df1, df2) -> pd.DataFrame:
     df3.drop(['count_y'] , axis=1, inplace=True)
     return df3  
 
+def network_format(df: pd.DataFrame) -> pd.DataFrame:
+    source = df['streamer']
+    target = df['Links_To']
+    weight = df['count']
+    df = pd.DataFrame({'Source': source, 'Target': target, 'Weight': weight})
+    return df
 
 def main(args):  
     streamer = args[0]
     SFS(streamer, depth, ' root')
     pbar.close()
     df = merge_dataframes_add_V(dataframes)
+    df = network_format(df)
     print(df)
-    df.to_csv(os.path.join(os.path.dirname(__file__), 'links', streamer + '_links.csv'))
+    df.to_csv(os.path.join(os.path.dirname(__file__), 'links', streamer + '_links.csv'), index=False)
 
 if __name__ == '__main__':
     print('start ... \n')
     #getToken()
-    pbar = tqdm(total = 1000)
+    pbar = tqdm(total = 2000)
 
     pbar.set_description("Getting data")
     if(len(sys.argv) > 1 and isStreamer(sys.argv[1])):
