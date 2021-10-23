@@ -1,5 +1,6 @@
 from dotenv import dotenv_values
 from pprint import pprint as pprint
+from multiprocessing import Process
 from tqdm import tqdm
 import requests as request
 import pandas as pd
@@ -20,7 +21,7 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 5
+depth = 3
 streamers_json = {}
 streamers_json_by_id = {} 
 pbar = None
@@ -40,12 +41,7 @@ def getIdByName(streamer: str) -> int:
     if(streamer in streamers_json): return streamers_json[streamer]['id']
 
     params = {'login': streamer}
-    try:
-        req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
-    except Exception as e:
-        print(e)
-        return getIdByName(streamer)
-
+    req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     return getId(req.json())
 
 def split_list_in_half(list:list):
@@ -71,11 +67,7 @@ def fill_streamers_json(list: list):
         
 
     params = {'login': list}
-    try:
-        req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
-    except Exception as e:
-        print(e)
-        fill_streamers_json(list)
+    req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
 
     if('data' in req.json()):
         for data in req.json()['data']:
@@ -89,12 +81,8 @@ def getFollowers(streamer: str) -> dict:
     if( streamer in visitedStreamers ): 
         propigation = visitedStreamers[streamer]['cursor']
         params.update({'after': propigation})
-    try:
-        req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
-    except Exception as e:
-        print(e)
-        return getFollowers(streamer)
     
+    req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
     streamer_follower_count.update({streamer: req.json()['total']})
     return req.json()
 
@@ -105,23 +93,14 @@ def getFollows(follower_id: int) -> dict:
         if('cursor' in visitedFollowers[follower_id]):
             propigation = visitedFollowers[follower_id]['cursor']
             params.update({'after': propigation})
-    try:
-        req = request.get("https://api.twitch.tv/helix/users/follows?", headers=headers, params=params)
-    except Exception as e:
-        print(e)
-        return getFollows(follower_id)
-    
+
+    req = request.get("https://api.twitch.tv/helix/users/follows?", headers=headers, params=params)
 
     return req.json()
 
 def getNameByID(follower_id: int):
     params = {'id' : follower_id}
-    try:
-        req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
-    except Exception as e:
-        print(e)
-        return getNameByID(follower_id)
-    
+    req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     return req.json()['data'][0]['display_name']
 
 def is_partnered(streamer: str):
@@ -131,19 +110,14 @@ def is_partnered(streamer: str):
         except:
             return False
     params = {'login': streamer}
-    try:
-        req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
-    except Exception as e:
-        print(e)
-        return is_partnered(streamer)
-    
+    req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     try:
         return req.json()['data'][0]['broadcaster_type'] == 'partner'
     except:
         return False
         
 
-def streamerToFollowersToStreamers(streamer: str) -> list:
+def streamerToFollowersToStreamers(streamer: str):
 
     followers = getFollowers(streamer)
 
@@ -153,8 +127,10 @@ def streamerToFollowersToStreamers(streamer: str) -> list:
             return []
     if(streamer in streamer_follower_count):
         if(streamer_follower_count[streamer] < 1000000):
-            #print(streamer + ' has less than million followers')
+            #print(streamer + ' has less than 100 thousand followers')
             return []
+    
+
 
     if ('pagination' in followers): 
         assignCursorToStreamer(streamer, followers['pagination'])
@@ -163,18 +139,15 @@ def streamerToFollowersToStreamers(streamer: str) -> list:
     if( 'data' not in followers):  
         return []
     
-    for i in range(0, len(followers['data'])):
-        try:
-            user_follows_Json = getFollows(followers['data'][i]['from_id'])
-            user_follows_data = user_follows_Json['data']
-        except Exception as e:
-            continue
+    for i in range(0, min(len(followers['data']), 10)):
+        user_follows_Json = getFollows(followers['data'][i]['from_id'])
+        user_follows_data = user_follows_Json['data']
 
         if('from_id' in user_follows_data):
             user = user_follows_data[0]['from_id']
             if('pagination' in user_follows_Json):
                 assignCursorToFollower(user, user_follows_Json['pagination'])
-        for i in range(0, len(user_follows_data)):
+        for i in range(0, min(len(user_follows_data), 10)):
             alsoFollows = user_follows_data[i]['to_name']
             if(alsoFollows == streamer): 
                 continue
@@ -187,12 +160,7 @@ def streamerToFollowersToStreamers(streamer: str) -> list:
 def getFollowerCount(streamer: str):
     id = getIdByName(streamer)
     params = {'to_id': id}
-    try:
-        req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
-    except Exception as e:
-        print(e)
-        return getFollowerCount(streamer)
-    
+    req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
     return req.json()['total']
 
 def assignCursorToStreamer(streamer: str, pagination):
@@ -206,48 +174,45 @@ def SFS(start_streamer: str, depth: int, came_from: str):
     
     if depth == 0: return
     pbar.set_description( ('{0} <- {1}').format(came_from, start_streamer))
-    l1 = streamerToFollowersToStreamers(start_streamer)
-    l2 = streamerToFollowersToStreamers(start_streamer)
-    list = l1 + l2
-    if(list == []): SFS(start_streamer, depth, came_from)
+    list = streamerToFollowersToStreamers(start_streamer)
+    if(list == []): return
     fill_streamers_json(list)
     pbar.update(len(list))
-    bridgeWithCount = countListInstancesOrdered(list)
-    df_local = loadLinksIntoDataFrame(bridgeWithCount, start_streamer)
+    df_local = loadLinksIntoDataFrame(start_streamer, list)
     dataframes.append(df_local)
-
-    for streamer in bridgeWithCount.keys():
-        if(bridgeWithCount[streamer] <= 3): continue
+    for streamer in list:
         try:
-            SFS(streamer, depth - 1, came_from + ' <- ' + start_streamer)
+            SFS(streamer, depth - 1, start_streamer)
         except:
             continue
 
 
 
-def loadLinksIntoDataFrame(bridgeWithCount: dict, streamer):
+def loadLinksIntoDataFrame(streamer, list):
+    bridgeWithCount = countListInstancesOrdered(list)
     keys = [streamer] * len(bridgeWithCount.keys())
     other_streamers = bridgeWithCount.keys()
     count = bridgeWithCount.values()
+
     data = {'streamer': keys, 'Links_To': other_streamers, 'count': count}
     df = pd.DataFrame(data)
     return df
 
 def countListInstancesOrdered(list: list) -> dict:
     list.sort()
-    ret = {}
+    dict = {}
     checking = list[0]
     checking_count = 1
-    for element in list[1:]:
-        if(not element == checking):
-            ret.update({checking: checking_count})
+    for element in list:
+        if(element is not checking):
+            dict.update({checking: checking_count})
             checking = element
             checking_count = 1
         else:
             checking_count += 1
-
-    ret.update({checking: checking_count})
-    return ret
+    dict.update({checking: checking_count})
+    dict[list[0]] -= 1
+    return dict
 
 def loadInCVS(filepath: str) -> pd.DataFrame:
     if(os.path.isfile(filepath)):
@@ -258,36 +223,18 @@ def loadInCVS(filepath: str) -> pd.DataFrame:
     
 def isStreamer(streamer: str) -> bool:
     params = {'login': streamer}
-    try:
-        req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
-    except Exception as e:
-        print(e)
-        return isStreamer(streamer)
-
+    req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
     if( 'data' not in req.json() ): return False
     return True
 
  
-def merge_dataframes_add_V(list_of_dataframes: list) -> pd.DataFrame:
-    ret = list_of_dataframes[0]
-    for df in list_of_dataframes:
-        ret = merge(ret, df)
-    return ret
-
-def merge(df1, df2) -> pd.DataFrame:
-    df3 = pd.merge(df1, df2, on=['streamer', 'Links_To'], how='outer')
-    df3 = df3.fillna(0)
-    df3['count'] = df3['count_x'] + df3['count_y']
-    df3.drop(['count_x'] , axis=1, inplace=True)
-    df3.drop(['count_y'] , axis=1, inplace=True)
-    return df3  
 
 
 def main(args):  
     streamer = args[0]
     SFS(streamer, depth, ' root')
     pbar.close()
-    df = merge_dataframes_add_V(dataframes)
+    df = pd.concat(dataframes, ignore_index=True)
     print(df)
     df.to_csv(os.path.join(os.path.dirname(__file__), 'links', streamer + '_links.csv'))
 
