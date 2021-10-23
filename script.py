@@ -20,7 +20,7 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 5
+depth = 3
 streamers_json = {}
 streamers_json_by_id = {} 
 pbar = None
@@ -143,17 +143,16 @@ def is_partnered(streamer: str):
         return False
         
 
-def streamerToFollowersToStreamers(streamer: str) -> list:
+def streamerToFollowersToStreamers(streamer: str) -> dict:
 
     followers = getFollowers(streamer)
 
     if(streamer in streamers_json):
         if('broadcaster_type' not in streamers_json[streamer] and streamers_json[streamer]['broadcaster_type'] != 'partnered'): 
-            #print(streamer + ' was not partnered')
             return []
+
     if(streamer in streamer_follower_count):
         if(streamer_follower_count[streamer] < 900000):
-            #print(streamer + ' has less than million followers')
             return []
 
     if ('pagination' in followers): 
@@ -183,6 +182,7 @@ def streamerToFollowersToStreamers(streamer: str) -> list:
     list.sort()
     if(len(list) == 0): 
         return streamerToFollowersToStreamers(streamer)
+
     return list
 
 def getFollowerCount(streamer: str):
@@ -202,7 +202,6 @@ def assignCursorToStreamer(streamer: str, pagination):
 def assignCursorToFollower(follower: int, pagination):
     visitedFollowers[follower] = pagination
 
-
 def SFS(start_streamer: str, depth: int, came_from: str):
     
     if depth == 0: return
@@ -213,9 +212,10 @@ def SFS(start_streamer: str, depth: int, came_from: str):
     if(list == []): 
         return
     fill_streamers_json(list)
-    pbar.update(len(list))
-    bridgeWithCount = countListInstancesOrdered(list)
+    
+    bridgeWithCount = countListInstancesOrdered(list, filter = 3)
     df_local = loadLinksIntoDataFrame(bridgeWithCount, start_streamer)
+    pbar.update(df_local.shape[0])
     dataframes.append(df_local)
 
     for streamer in bridgeWithCount.keys():
@@ -235,20 +235,22 @@ def loadLinksIntoDataFrame(bridgeWithCount: dict, streamer):
     df = pd.DataFrame(data)
     return df
 
-def countListInstancesOrdered(list: list) -> dict:
+def countListInstancesOrdered(list: list, filter = 1) -> dict:
     list.sort()
     ret = {}
     checking = list[0]
     checking_count = 1
     for element in list[1:]:
         if(not element == checking):
-            ret.update({checking: checking_count})
+            if(checking_count >= filter):
+                ret.update({checking: checking_count})
             checking = element
             checking_count = 1
         else:
             checking_count += 1
 
-    ret.update({checking: checking_count})
+    if(checking_count >= filter):
+        ret.update({checking: checking_count})
     return ret
 
 def loadInCVS(filepath: str) -> pd.DataFrame:
@@ -272,8 +274,12 @@ def isStreamer(streamer: str) -> bool:
  
 def merge_dataframes_add_V(list_of_dataframes: list) -> pd.DataFrame:
     ret = list_of_dataframes[0]
+    if(list_of_dataframes[0] is None): return None
+    if(len(list_of_dataframes) == 1): return ret
+
     for df in list_of_dataframes:
         ret = merge(ret, df)
+        pprint(ret)
     return ret
 
 def merge(df1, df2) -> pd.DataFrame:
@@ -296,7 +302,7 @@ def main(args):
 if __name__ == '__main__':
     print('start ... \n')
     #getToken()
-    pbar = tqdm(total = 300000)
+    pbar = tqdm(total = 1000)
 
     pbar.set_description("Getting data")
     if(len(sys.argv) > 1 and isStreamer(sys.argv[1])):
