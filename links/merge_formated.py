@@ -47,17 +47,31 @@ def loadInCVS(filepath: str) -> pd.DataFrame:
     else:
         return None
 
+def remove_file_extension(filepath: str) -> str:
+    return filepath[:filepath.rfind('.')]
+
+def remove_root_directory(filepath: str) -> str:
+    if(filepath[:2] == './'):
+        return filepath[filepath.rfind('./')+2:]
+    else:
+        return filepath
+
+def get_first_word(filepath: str) -> str:
+    return filepath[:filepath.find('_')]
+
 def main(argv, flag):
     df1 = loadInCVS(argv[0])
-    df2 = loadInCVS(argv[1])
-
-    if(flag):
-        df3 = subtract(df1, df2)
-    else:
-        df3 = merge(df1, df2)
-
-    df3.to_csv(argv[0][:-4] + "_" + argv[1][:-4] + '.csv', index=False)
-    print(df3)
+    fileNames = [get_first_word(remove_file_extension(remove_root_directory(argv[0])))] 
+    for csv in argv[1:]:
+        df2 = loadInCVS(csv)
+        if(flag):
+            df1 = subtract(df1, df2)
+        else:
+            df1 = merge(df1, df2)
+        fileNames.append(get_first_word(remove_file_extension(remove_root_directory(csv))))
+    print(fileNames)
+    df1.to_csv( "_".join(fileNames) + '.csv', index=False)
+    print(df1)
 
 def isFile(filepath: str) -> bool:
     if(os.path.isfile(filepath)):

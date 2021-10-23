@@ -4,7 +4,6 @@ import os
 from tqdm import tqdm
 
 
-
 def merge(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
     if(df1.shape[0] > df2.shape[0]):
         df1, df2 = df2, df1
@@ -21,6 +20,7 @@ def merge(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
     pbar_merge.close()
     print('\n')
     return df2
+
 
 def subtract(df1: pd.DataFrame, df2: pd.DataFrame) -> pd.DataFrame:
     if(df1.shape[0] > df2.shape[0]):
@@ -47,6 +47,14 @@ def loadInCVS(filepath: str) -> pd.DataFrame:
     else:
         return None
 
+def format(filename: str) -> pd.DataFrame:
+    df = pd.read_csv(filename)
+    source = df['streamer']
+    target = df['Links_To']
+    weight = df['count']
+    ret = pd.DataFrame({'Source': source, 'Target': target, 'Weight': weight})
+    return ret
+
 def main(argv, flag):
     df1 = loadInCVS(argv[0])
     df2 = loadInCVS(argv[1])
@@ -55,7 +63,7 @@ def main(argv, flag):
         df3 = subtract(df1, df2)
     else:
         df3 = merge(df1, df2)
-
+    df3 = format(df3)
     df3.to_csv(argv[0][:-4] + "_" + argv[1][:-4] + '.csv', index=False)
     print(df3)
 
