@@ -309,7 +309,7 @@ def main(args):
 if __name__ == '__main__':
     print('start ... \n')
     pbar = tqdm(total = 2000)
-
+    sys.setrecursionlimit(10000)
     pbar.set_description("Getting data")
     if(len(sys.argv) > 1 and isStreamer(sys.argv[1])):
 
