@@ -152,7 +152,7 @@ def streamerToFollowersToStreamers(streamer: str) -> list:
             #print(streamer + ' was not partnered')
             return []
     if(streamer in streamer_follower_count):
-        if(streamer_follower_count[streamer] < 1000000):
+        if(streamer_follower_count[streamer] < 900000):
             #print(streamer + ' has less than million followers')
             return []
 
@@ -179,6 +179,7 @@ def streamerToFollowersToStreamers(streamer: str) -> list:
             if(alsoFollows == streamer): 
                 continue
             list.append(alsoFollows)
+
     list.sort()
     if(len(list) == 0): 
         return streamerToFollowersToStreamers(streamer)
@@ -209,7 +210,8 @@ def SFS(start_streamer: str, depth: int, came_from: str):
     l1 = streamerToFollowersToStreamers(start_streamer)
     l2 = streamerToFollowersToStreamers(start_streamer)
     list = l1 + l2
-    if(list == []): SFS(start_streamer, depth, came_from)
+    if(list == []): 
+        return
     fill_streamers_json(list)
     pbar.update(len(list))
     bridgeWithCount = countListInstancesOrdered(list)
