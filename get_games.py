@@ -3,6 +3,9 @@ import cfscrape
 import re
 import pandas as pd
 from pprint import pprint
+from dotenv import dotenv_values
+
+config = dotenv_values('.env')
 
 cfscraper = cfscrape.create_scraper()
 
@@ -11,12 +14,12 @@ headers = {
 }
 
 def get_url(streamer: str) -> str:
-    str = "https://twitchtracker.com/{0}".format(streamer)
+    str = config['website'] + "{0}".format(streamer)
     #print(str)
     return str
 
 def get_url_games(streamer: str) -> str:
-    str = "https://twitchtracker.com/{0}/games".format(streamer)
+    str = config['website'] + "{0}/games".format(streamer)
     #print(str)
     return str
 
