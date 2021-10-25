@@ -60,15 +60,17 @@ def get_first_word(filepath: str) -> str:
     return filepath[:filepath.find('_')]
 
 def main(argv, flag):
-    df1 = loadInCVS('complete.csv')
+    if(isFile('complete.csv')):
+        df1 = loadInCVS('complete.csv')
+    else:
+        df1 = pd.DataFrame({'Source':[], 'Target':[], 'Weight':[]})
     for csv in argv:
         df2 = loadInCVS(csv)
         if(flag):
             df1 = subtract(df1, df2)
         else:
             df1 = merge(df1, df2)
-        fileNames.append(get_first_word(remove_file_extension(remove_root_directory(csv))))
-    print(fileNames)
+
     df1.to_csv('complete.csv', index=False)
     print(df1)
 
@@ -76,11 +78,17 @@ def isFile(filepath: str) -> bool:
     if(os.path.isfile(filepath)):
         return True
     else:
-        print( str + " File does not exist")
+        print( filepath + " File does not exist")
         return False 
 
 
 if __name__ == '__main__':
+    if('complete.csv' in sys.argv or './complete.csv' in sys.argv):
+        print("Dont include complete.csv. This will be merged automatically")
+        exit()
+    if(len(sys.argv) < 2):
+        print("Usage: python3 merge_formated.py <file1> <file2> <file3> ...")
+        exit()
     if(sys.argv[1] == '-r'):
         main(sys.argv[2:], True)
     else:

@@ -2,6 +2,10 @@ import pandas as pd
 from sys import argv
 
 if __name__ == '__main__':
+    if len(argv) != 2:
+        print('Usage: python3 get_unique_streamer.py <data_file>')
+        exit(1)
+
     df = pd.read_csv(argv[1])
     df.drop_duplicates(subset=['Source'])
     targets = df.drop_duplicates(subset=['Source'])
@@ -9,11 +13,12 @@ if __name__ == '__main__':
     targets = pd.DataFrame({'User': targets})
     sources = df.drop_duplicates(subset=['Source'])['Source']
     sources = pd.DataFrame({'User': sources})
+    uniques = sources.merge(targets, on='User', how='outer')
+
     previous = pd.read_csv('./streamers.csv')
-    unqiues = sources.merge(targets, on='User', how='outer')
-    unqiues = unqiues.merge(previous, on='User', how='outer')
-    unqiues = unqiues.dropna()
-    unqiues = unqiues.drop_duplicates()
-    unqiues.sort_values(by=['User'], inplace=True)
-    unqiues.to_csv('streamers.csv', index=False)
-    print(unqiues)
+    uniques = previous.merge(uniques, on='User', how='outer')
+    print(uniques)
+    uniques = uniques.drop_duplicates()
+    uniques.sort_values(by=['User'], inplace=True)
+    uniques.to_csv('streamers.csv', index=False)
+    #print(uniques)

@@ -71,6 +71,3 @@ def getIdByname(name: str, nodes: pd.DataFrame) -> int:
 if __name__ == '__main__':
     nodes = node_csv()
     edges = edges(nodes)
-    #df = format(argv[1])
-    #df.to_csv(argv[1][:-4] + '_formated.csv', index=False)
-    #print(df)
