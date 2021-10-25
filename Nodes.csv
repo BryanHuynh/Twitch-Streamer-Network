@@ -1,45 +1,198 @@
 Id,Label,Top Game
-0,BadBoyHalo,Minecraft
-1,CaptainPuffy,Minecraft
-2,Corpse_Husband,Back 4 Blood
-3,Emiru,League of Legends
-4,EsfandTV,World of Warcraft
-5,Fundy,Minecraft
-6,GeorgeNotFound,Minecraft
-7,HasanAbi,Just Chatting
-8,JackManifoldTV,Minecraft
-9,JustaMinx,Just Chatting
-10,Mizkif,Just Chatting
-11,Nihachu,Minecraft
-12,Nmplol,Just Chatting
-13,Philza,Minecraft
-14,Purpled,Minecraft
-15,QTCinderella,Just Chatting
-16,Quackity,Minecraft
-17,QuackityToo,Just Chatting
-18,RanbooLive,Minecraft
-19,Sapnap,Minecraft
-20,Slimecicle,Minecraft
-21,Sykkuno,League of Legends
-22,ThisIsNotGeorgeNotFound,Minecraft
-23,Tubbo,Minecraft
-24,TubboLIVE,Minecraft
-25,WilburSoot,Minecraft
-26,buddha,Grand Theft Auto V
-27,cyr,Grand Theft Auto V
-28,dreamwastaken,Minecraft
-29,karljacobs,Roblox
-30,karlnetwork,Gang Beasts
-31,lilypichu,League of Legends
-32,ludwig,Just Chatting
-33,michaelreeves,Minecraft
-34,neimki,Just Chatting
-35,pokimane,League of Legends
-36,ranboobutnot,Minecraft
-37,richwcampbell,World of Warcraft
-38,sapnapalt,VALORANT
-39,skeppy,Minecraft
-40,sodapoppin,World of Warcraft
-41,tommyinnit,Minecraft
-42,tommyinnitalt,Minecraft
-43,xQcOW,Overwatch
+0,39daph,Art
+1,3hunny,Fortnite
+2,4PFllc,Variety
+3,5uppp,Among Us
+4,AdinRoss,NBA 2K20
+5,Albralelie,Apex Legends
+6,Amouranth,Just Chatting
+7,Antfrost,Minecraft
+8,AriGameplays,Fortnite
+9,AriaSaki,Just Chatting
+10,AsunaWEEB,VALORANT
+11,AverageJonas,VALORANT
+12,BadBoyHalo,Minecraft
+13,Blushi,Minecraft
+14,BoomerNA,Minecraft
+15,BrookeAB,Fortnite
+16,Bugha,Fortnite
+17,CaptainPuffy,Minecraft
+18,CaptainSparklez,Minecraft
+19,Chobuu,Minecraft
+20,ConnorEatsPants,Minecraft
+21,Corpse_Husband,Back 4 Blood
+22,DIST1NCTI0N,Dead by Daylight
+23,DisguisedToast,Hearthstone
+24,DreamAlt_,Variety
+25,DropsByPonk,Minecraft
+26,ESL_CSGO,Counter-Strike: Global Offensive
+27,Emiru,League of Legends
+28,Eret,Minecraft
+29,ErynStreams,Minecraft
+30,EsfandTV,World of Warcraft
+31,Faide,Apex Legends
+32,Flexinja,VALORANT
+33,Foolish_Gamers,Minecraft
+34,Fundy,Minecraft
+35,GeorgeNotFound,Minecraft
+36,Governor,VALORANT
+37,Grimm,VALORANT
+38,GuysGoodGaming,Variety
+39,HBomb94,Minecraft
+40,HDSamie,Fortnite
+41,HamudyZera,Garena Free Fire
+42,HasanAbi,Just Chatting
+43,Hiko,VALORANT
+44,HowToNoodle,VALORANT
+45,IShowSpeed,Just Chatting
+46,I_KILLED_A_HYPE,other
+47,ImKaiCenat,Just Chatting
+48,JASONR,Counter-Strike: Global Offensive
+49,JackManifoldAlt,Just Chatting
+50,JackManifoldTV,Minecraft
+51,Jeffs,New World
+52,Jigginzz,Fortnite
+53,Jikishi,Minecraft
+54,Joe_Bartolozzi,Rocket League
+55,JustaMinx,Just Chatting
+56,Kaemiii,VALORANT
+57,Keeoh,Fortnite
+58,Kyedae,VALORANT
+59,LanuSky,Minecraft
+60,Markiplier,Just Chatting
+61,Michaelmcchill,Minecraft
+62,Mixwell,VALORANT
+63,Mizkif,Just Chatting
+64,Myth,Fortnite
+65,NICKMERCS,Fortnite
+66,NRG_Hamlinz,Fortnite
+67,Nihachu,Minecraft
+68,Ninja,Fortnite
+69,Nmplol,Just Chatting
+70,PhilzALT,Rocket League
+71,Philza,Minecraft
+72,PolatBreakeR,other
+73,Punz,Fortnite
+74,Purpled,Minecraft
+75,QTCinderella,Just Chatting
+76,Quackity,Minecraft
+77,QuackityToo,Just Chatting
+78,RPGMais,Minecraft
+79,RanbooLive,Minecraft
+80,Riot Games,League of Legends
+81,Saluted,Call of Duty: Black Ops 4
+82,Sapnap,Minecraft
+83,ScreaM,VALORANT
+84,ShahZaM,VALORANT
+85,ShivFPS,Apex Legends
+86,ShubbleYT,Minecraft
+87,SicK_cs,VALORANT
+88,SleepyPuffy,Just Chatting
+89,Slimecicle,Minecraft
+90,Smajor,Minecraft
+91,Sneegsnag,Minecraft
+92,Snifferish,Minecraft
+93,Subroza,VALORANT
+94,Swoohgg,Fortnite
+95,Sykkuno,League of Legends
+96,THEODORTlive,Just Chatting
+97,TSM_ImperialHal,Apex Legends
+98,TapL,Minecraft
+99,Technoblade,Variety
+100,TenZ,VALORANT
+101,Tfue,Fortnite
+102,ThisIsNotGeorgeNotFound,Minecraft
+103,TimTheTatman,Fortnite
+104,TinaKitten,Among Us
+105,Tubbo,Minecraft
+106,TubboLIVE,Minecraft
+107,VALORANT,VALORANT
+108,WARDELL,VALORANT
+109,Wallibear,Minecraft
+110,WilburSoot,Minecraft
+111,Wisp,Minecraft
+112,aceu,Apex Legends
+113,aimsey,Minecraft
+114,alopelol,other
+115,awesamdude,Minecraft
+116,bearbubb,Minecraft
+117,beautie_,Minecraft
+118,billzo,Just Chatting
+119,buddha,Grand Theft Auto V
+120,caitibugzz,Just Chatting
+121,cloakzy,Fortnite
+122,cyr,Grand Theft Auto V
+123,daltoosh,Apex Legends
+124,dapr,VALORANT
+125,dreamwastaken,Minecraft
+126,elbichi,League of Legends
+127,elf0v_,Minecraft
+128,elvinvalorant,Grand Theft Auto V
+129,ethos,VALORANT
+130,fuslie,Just Chatting
+131,hJune,Rust
+132,hannahxxrose,Minecraft
+133,heyflu_,Apex Legends
+134,iiTzTimmy,Apex Legends
+135,illaillss,other
+136,ilyxpilled,other
+137,jacksepticeye,Among Us
+138,jamhvh,other
+139,jschlatt,Minecraft
+140,juansguarnizo,Just Chatting
+141,k1ngl1ght,other
+142,karljacobs,Roblox
+143,karljacobs_alt,other
+144,karlnetwork,Gang Beasts
+145,kennyS,Counter-Strike: Global Offensive
+146,kkatamina,VALORANT
+147,lilypichu,League of Legends
+148,loltyler1,League of Legends
+149,ludwig,Just Chatting
+150,magohotdog1,Grand Theft Auto V
+151,mayin_fucs,other
+152,michaelreeves,Minecraft
+153,moistcr1tikal,Just Chatting
+154,nAts,VALORANT
+155,neimki,Just Chatting
+156,papabhosz,other
+157,phoodu,Minecraft
+158,piso4,Minecraft
+159,playapex,Apex Legends
+160,ploo,VALORANT
+161,pokimane,League of Legends
+162,projektmelody,Just Chatting
+163,purpled_alt,Fortnite
+164,quadd4rv1n7,FIFA 21
+165,ranbooalt,Just Chatting
+166,ranboobutnot,Minecraft
+167,richwcampbell,World of Warcraft
+168,s0mcs,Counter-Strike: Global Offensive
+169,sapnapalt,VALORANT
+170,shanks_ttv,VALORANT
+171,shiaron_official,Grand Theft Auto V
+172,shroud,PUBG: BATTLEGROUNDS
+173,sinatraa,VALORANT
+174,skeppy,Minecraft
+175,snapster007,other
+176,sodapoppin,World of Warcraft
+177,spideyarmy,Minecraft
+178,summit1g,Grand Theft Auto V
+179,sweetdreams,Apex Legends
+180,sylveey,Minecraft
+181,tarik,Counter-Strike: Global Offensive
+182,teakzfn,other
+183,techneoblade,Variety
+184,tfnicca,other
+185,therealwinterjade,Mystery Manor
+186,tommyinnit,Minecraft
+187,tommyinnitalt,Minecraft
+188,vGumiho,VALORANT
+189,vJet,other
+190,veibae,other
+191,xQcOW,Overwatch
+192,yennefergi,other
+193,yourragegaming,other
+194,ywika,other
+195,zombs,other
+196,塩田いお,other

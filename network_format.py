@@ -27,6 +27,9 @@ def stringToArray(string):
     return array
 
 def getTopGame(string):
+    if(type(string) == float):
+        return 'other'
+
     array = stringToArray(string)
     ret = array[0][1:-1]
     return ret
@@ -46,7 +49,6 @@ def node_csv():
 
 def edges(nodes: pd.DataFrame) -> pd.DataFrame:
     df = pd.read_csv('links/complete.csv')
-
     source = []
     target = []
     weight = []
@@ -62,7 +64,7 @@ def edges(nodes: pd.DataFrame) -> pd.DataFrame:
 
 def getIdByname(name: str, nodes: pd.DataFrame) -> int:
     id = nodes.loc[nodes['Label'] == name]['Id'].values[0]
-    print(id)
+    #print(id)
     return id
 
 
