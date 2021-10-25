@@ -45,7 +45,7 @@ def node_csv():
     return ret
 
 def edges(nodes: pd.DataFrame) -> pd.DataFrame:
-    df = pd.read_csv('links/lilypichu_links.csv')
+    df = pd.read_csv('links/complete.csv')
 
     source = []
     target = []
