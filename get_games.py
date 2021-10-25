@@ -15,12 +15,12 @@ headers = {
 
 def get_url(streamer: str) -> str:
     str = config['website'] + "{0}".format(streamer)
-    #print(str)
+    print(str)
     return str
 
 def get_url_games(streamer: str) -> str:
     str = config['website'] + "{0}/games".format(streamer)
-    #print(str)
+    print(str)
     return str
 
 def souper(url):
@@ -28,19 +28,17 @@ def souper(url):
     return soup(html, "html.parser")
 
 def getGames(streamer: str) -> list:
-    try:
-        url = get_url_games(streamer)
-        page_soup = souper(url)
-        gamesTable = page_soup.find('table', {'id':'games'})
-        gamesRow = gamesTable.find('tbody').find_all('tr')
-        games = []
-        for row in gamesRow[:5]:
-            game = row.find('a').text
-            games.append(game)
-        print(streamer, games)
-        return games
-    except:
-        return []
+    url = get_url_games(streamer)
+    page_soup = souper(url)
+    gamesTable = page_soup.find('table', {'id':'games'})
+    gamesRow = gamesTable.find('tbody').find_all('tr')
+    games = []
+    for row in gamesRow[:5]:
+        game = row.find('a').text
+        games.append(game)
+    print(streamer, games)
+    return games
+
 
 def method2(streamer: str) -> list:
     url = get_url(streamer)
@@ -60,17 +58,22 @@ def method2(streamer: str) -> list:
 def main():
     print('If theres an error its like that the website is cutting access. Use VPN as a workaround')
     df = pd.read_csv('./streamers.csv')
+    df['Games'] = df['Games'].astype(object)
     for index, row in df.iterrows():
-        print(get_url(row['User']))
         if(pd.isnull(row['Games'])):
             try:
-                games = getGames(row['User'])
-            except Exception as e:
-                print(e)
                 games = method2(row['User'])
-            row['Games'] = games
-            #print(row)
-            df.to_csv('./streamers.csv', index=False)
+            except:
+                try:
+                    games = getGames(row['User'])
+                except:
+                    print('Manual evaluation of {0} required'.format(row['User']))
+                continue
+                
+
+            df.at[index, 'Games'] = games
+        df.to_csv('streamers.csv', index=False)
+    
 
     
 

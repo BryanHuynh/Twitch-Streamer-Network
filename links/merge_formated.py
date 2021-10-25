@@ -60,9 +60,8 @@ def get_first_word(filepath: str) -> str:
     return filepath[:filepath.find('_')]
 
 def main(argv, flag):
-    df1 = loadInCVS(argv[0])
-    fileNames = [get_first_word(remove_file_extension(remove_root_directory(argv[0])))] 
-    for csv in argv[1:]:
+    df1 = loadInCVS('complete.csv')
+    for csv in argv:
         df2 = loadInCVS(csv)
         if(flag):
             df1 = subtract(df1, df2)
@@ -70,7 +69,7 @@ def main(argv, flag):
             df1 = merge(df1, df2)
         fileNames.append(get_first_word(remove_file_extension(remove_root_directory(csv))))
     print(fileNames)
-    df1.to_csv( "_".join(fileNames) + '.csv', index=False)
+    df1.to_csv('complete.csv', index=False)
     print(df1)
 
 def isFile(filepath: str) -> bool:

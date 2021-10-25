@@ -21,7 +21,7 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 4
+depth = 3
 streamers_json = {}
 streamers_json_by_id = {} 
 pbar = None
@@ -159,15 +159,19 @@ def streamerToFollowersToStreamers(streamer: str) -> dict:
             return []
 
     if(streamer in streamer_follower_count):
-        if(streamer_follower_count[streamer] < 900000):
+        if(streamer_follower_count[streamer] < 500000):
             return []
 
     if ('pagination' in followers): 
         assignCursorToStreamer(streamer, followers['pagination'])
 
+    
     list = []
-    if( 'data' not in followers):  
+    
+    if( 'data' not in followers): 
+        
         return []
+    
     
     for i in range(0, len(followers['data'])):
         try:
@@ -216,21 +220,22 @@ def SFS(start_streamer: str, depth: int, came_from: str):
     pbar.set_description( ('{0} <- {1}').format(came_from, start_streamer))
     l1 = streamerToFollowersToStreamers(start_streamer)
     l2 = streamerToFollowersToStreamers(start_streamer)
-    list = l1 + l2
+    l3 = streamerToFollowersToStreamers(start_streamer)
+    list = l1 + l2 + l3
     if(list == []): 
         return
     fill_streamers_json(list)
     
-    bridgeWithCount = countListInstancesOrdered(list, filter = 3)
+    bridgeWithCount = countListInstancesOrdered(list, filter = 5)
     df_local = loadLinksIntoDataFrame(bridgeWithCount, start_streamer)
     pbar.update(df_local.shape[0])
     dataframes.append(df_local)
 
     for streamer in bridgeWithCount.keys():
-        if(bridgeWithCount[streamer] <= 3): continue
         try:
             SFS(streamer, depth - 1, came_from + ' <- ' + start_streamer)
-        except:
+        except Exception as e:
+            print(e)
             continue
 
 

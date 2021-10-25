@@ -9,9 +9,11 @@ if __name__ == '__main__':
     targets = pd.DataFrame({'User': targets})
     sources = df.drop_duplicates(subset=['Source'])['Source']
     sources = pd.DataFrame({'User': sources})
-    previous = pd.read_csv('./streamers.csv')
+    #previous = pd.read_csv('./streamers.csv')
     unqiues = sources.merge(targets, on='User', how='outer')
-    unqiues = unqiues.merge(previous, on='User', how='outer')
+    #unqiues = unqiues.merge(previous, on='User', how='outer')
+    unqiues['Games'] = ""
+    unqiues['Games'] = unqiues['Games'].astype(object)
     unqiues = unqiues.dropna()
     unqiues = unqiues.drop_duplicates()
     unqiues.sort_values(by=['User'], inplace=True)
