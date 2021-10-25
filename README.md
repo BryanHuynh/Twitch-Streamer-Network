@@ -47,9 +47,14 @@ create a new file called .env in the root folder.
 
 the contents of the file should be along the lines of
 
-`client_id = '<client_id>'
-client_secret = 'client_secret'
-app_access_token = 'Bearer <app_access_token>`
+    client_id = '<client_id>'
+
+    client_secret = 'client_secret'
+
+    app_access_token = 'Bearer <app_access_token>
+
+    website = "<DM for website>"
+
 
 dm me to get this file.
 
