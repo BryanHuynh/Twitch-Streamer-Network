@@ -1,3 +1,18 @@
+# Turning Data into network Format for gephi
+
+Run `python3 script.py <streamer>` on a streamer to get a new data set in /links/. 
+
+combine the data sets you've created with `python3 merge_formated.py <dataset>` in /links/
+
+    Skip step if you only want to use one dataset. Just replace dataset filename with `complete.csv`
+  
+run `python3 get_unique_streamer.py ./links/complete.csv` this will generate/update the streamer.csv in the root directory with all streamers
+
+run `python3 get_games.py` to populate streamer.csv with the streamers top 5 games
+
+run `python3 network_format.py` to generate a nodes and edge list that can be used in gephi
+
+
 # To run
 
 `python3 script.py <streamer_name>`
@@ -32,9 +47,14 @@ create a new file called .env in the root folder.
 
 the contents of the file should be along the lines of
 
-`client_id = '<client_id>'
-client_secret = 'client_secret'
-app_access_token = 'Bearer <app_access_token>`
+    client_id = '<client_id>'
+
+    client_secret = 'client_secret'
+
+    app_access_token = 'Bearer <app_access_token>
+
+    website = "<DM for website>"
+
 
 dm me to get this file.
 
