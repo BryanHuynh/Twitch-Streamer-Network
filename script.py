@@ -21,12 +21,13 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-depth = 5
+max_depth = 5
 streamers_json = {}
 streamers_json_by_id = {} 
 pbar = None
 SFS_count = 0
 streamer_follower_count = {}
+pbar_set_flag = False
 
 headers = {'Client-Id': config['client_id'], 'Authorization': config['app_access_token']}
 
@@ -98,7 +99,7 @@ def getFollowers(streamer: str) -> dict:
         time.sleep(2)
         print(e)
         return getFollowers(streamer)
-    
+    #pprint(req.json())
     streamer_follower_count.update({streamer: req.json()['total']})
     return req.json()
 
@@ -159,7 +160,7 @@ def streamerToFollowersToStreamers(streamer: str) -> dict:
             return []
 
     if(streamer in streamer_follower_count):
-        if(streamer_follower_count[streamer] < 500000):
+        if(streamer_follower_count[streamer] < 450000):
             return []
 
     if ('pagination' in followers): 
@@ -214,29 +215,41 @@ def assignCursorToStreamer(streamer: str, pagination):
 def assignCursorToFollower(follower: int, pagination):
     visitedFollowers[follower] = pagination
 
+
+
 def SFS(start_streamer: str, depth: int, came_from: str):
-    
+    global pbar
     if depth == 0: return
-    pbar.set_description( ('{0} <- {1}').format(came_from, start_streamer))
+    
     l1 = streamerToFollowersToStreamers(start_streamer)
     l2 = streamerToFollowersToStreamers(start_streamer)
-    l3 = streamerToFollowersToStreamers(start_streamer)
-    list = l1 + l2 + l3
+    list = l1 + l2
     if(list == []): 
         return
     fill_streamers_json(list)
     
     bridgeWithCount = countListInstancesOrdered(list, filter = 5)
+
+    if(depth == max_depth):
+        print(bridgeWithCount.keys())
+        pbar = tqdm(total = len(bridgeWithCount.keys()))
+    else:
+        pbar.set_description( ('{0} <- {1}').format(came_from, start_streamer))
+
     df_local = loadLinksIntoDataFrame(bridgeWithCount, start_streamer)
-    pbar.update(df_local.shape[0])
+    
     dataframes.append(df_local)
 
     for streamer in bridgeWithCount.keys():
+        if(depth == max_depth):
+            pbar.update(1)
         try:
             SFS(streamer, depth - 1, came_from + ' <- ' + start_streamer)
         except Exception as e:
             print(e)
             continue
+        
+
 
 
 
@@ -313,7 +326,7 @@ def network_format(df: pd.DataFrame) -> pd.DataFrame:
 
 def main(args):  
     streamer = args[0]
-    SFS(streamer, depth, ' root')
+    SFS(streamer, max_depth, ' root')
     pbar.close()
     df = merge_dataframes_add_V(dataframes)
     df = network_format(df)
@@ -322,9 +335,8 @@ def main(args):
 
 if __name__ == '__main__':
     print('start ... \n')
-    pbar = tqdm(total = 2000)
+    
     sys.setrecursionlimit(10000)
-    pbar.set_description("Getting data")
     if(len(sys.argv) > 1 and isStreamer(sys.argv[1])):
 
         cProfile.run('main(sys.argv[1:])', 'output.dat')
