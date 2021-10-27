@@ -28,7 +28,7 @@ pbar = None
 SFS_count = 0
 streamer_follower_count = {}
 pbar_set_flag = False
-
+min_follower_count = 450000
 headers = {'Client-Id': config['client_id'], 'Authorization': config['app_access_token']}
 
 
@@ -63,7 +63,6 @@ def remove_all_duplicates_in_ordered_list(list: list) -> list:
             list.append(key)
     return list
 
-
 def fill_streamers_json(list: list):
     list = remove_all_duplicates_in_ordered_list(list)
     if(len(list) > 50):
@@ -72,6 +71,9 @@ def fill_streamers_json(list: list):
         fill_streamers_json(l2)
         return
         
+    for item in list:
+        if(item in streamers_json):
+            list.remove(item)
 
     params = {'login': list}
     try:
@@ -85,6 +87,7 @@ def fill_streamers_json(list: list):
         for data in req.json()['data']:
             if(data['login'] in streamers_json): continue
             streamers_json[data['login']] = data
+            streamers_json_by_id[data['id']] = data
 
     
 def getFollowers(streamer: str) -> dict:
@@ -121,6 +124,8 @@ def getFollows(follower_id: int) -> dict:
     return req.json()
 
 def getNameByID(follower_id: int):
+    if(id in streamers_json_by_id): return streamers_json_by_id[id]['login']
+
     params = {'id' : follower_id}
     try:
         req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)
@@ -160,7 +165,7 @@ def streamerToFollowersToStreamers(streamer: str) -> dict:
             return []
 
     if(streamer in streamer_follower_count):
-        if(streamer_follower_count[streamer] < 450000):
+        if(streamer_follower_count[streamer] < min_follower_count):
             return []
 
     if ('pagination' in followers): 
@@ -199,6 +204,8 @@ def streamerToFollowersToStreamers(streamer: str) -> dict:
 
 def getFollowerCount(streamer: str):
     id = getIdByName(streamer)
+    if(streamer in streamer_follower_count): 
+        return streamer_follower_count[streamer]
     params = {'to_id': id}
     try:
         req = request.get('https://api.twitch.tv/helix/users/follows?', headers=headers, params=params)
@@ -206,7 +213,7 @@ def getFollowerCount(streamer: str):
         time.sleep(2)
         print(e)
         return getFollowerCount(streamer)
-    
+    streamer_follower_count.update({streamer: req.json()['total']})
     return req.json()['total']
 
 def assignCursorToStreamer(streamer: str, pagination):
@@ -217,19 +224,22 @@ def assignCursorToFollower(follower: int, pagination):
 
 
 
-def SFS(start_streamer: str, depth: int, came_from: str):
+def SFS(start_streamer: str, depth: int, came_from: str, previous_list: list = []):
     global pbar
     if depth == 0: return
     
     l1 = streamerToFollowersToStreamers(start_streamer)
     l2 = streamerToFollowersToStreamers(start_streamer)
-    list = l1 + l2
-    if(list == []): 
-        return
-    fill_streamers_json(list)
-    
-    bridgeWithCount = countListInstancesOrdered(list, filter = 5)
+    list = l1 + l2 + previous_list
 
+    fill_streamers_json(list)
+
+    bridgeWithCount = countListInstancesOrdered(list, filter = 4)
+    bridgeWithCount = filter_streamer_list_by_follower_counter(bridgeWithCount, min_follower_count)
+    if(len(bridgeWithCount.keys()) == 0): 
+        SFS(start_streamer, depth, came_from, previous_list = list)
+
+    #print(bridgeWithCount)
     if(depth == max_depth):
         print(bridgeWithCount.keys())
         pbar = tqdm(total = len(bridgeWithCount.keys()))
@@ -248,6 +258,16 @@ def SFS(start_streamer: str, depth: int, came_from: str):
         except Exception as e:
             print(e)
             continue
+
+def filter_streamer_list_by_follower_counter(streamer_list: dict, min_follower_count: int):
+    to_remove = []
+    for streamer in streamer_list.keys():
+        if(getFollowerCount(streamer) < min_follower_count):
+            to_remove.append(streamer)
+    
+    for streamer in to_remove:
+        del streamer_list[streamer]
+    return streamer_list
         
 
 
@@ -287,6 +307,9 @@ def loadInCVS(filepath: str) -> pd.DataFrame:
         return None
     
 def isStreamer(streamer: str) -> bool:
+    if(streamer in streamers_json):
+        return True
+
     params = {'login': streamer}
     try:
         req = request.get('https://api.twitch.tv/helix/users?', headers=headers, params=params)

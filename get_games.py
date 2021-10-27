@@ -32,6 +32,11 @@ def get_url_games(streamer: str) -> str:
     print(str)
     return str
 
+def get_url_m3(streamer: str) -> str:
+    str = config['website_2'] + 'streamer/'+ "{0}".format(remove_spaces(streamer))
+    print(str)
+    return str
+
 def souper(url):
     html = cfscraper.get(url, headers=headers).content
     return soup(html, "html.parser")
@@ -47,6 +52,28 @@ def getGames(streamer: str) -> list:
         games.append(game)
     print(streamer, games)
     return games
+
+def method3(streamer: str):
+    url = get_url_m3(streamer)
+    page_soup = souper(url)
+    expression = 'https?://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))[\w]*'
+    href = re.search(expression, str(page_soup))
+    while(href is not None):
+        print(href.group(0))
+        page_soup = souper(href.group(0))
+        #print(page_soup)
+        expression = 'https?://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))[\w]*'
+        href = re.search(expression, str(page_soup))
+
+    print(href.group(0))
+    tags = page_soup.find_all('span', {'class':'barname'})
+    games = []
+    for row in tags[:5]:
+        games.append(row.text)
+    print(streamer, games)
+    return games
+
+
 
 
 def method2(streamer: str) -> list:
@@ -68,23 +95,19 @@ def main():
     print('If theres an error its like that the website is cutting access. Use VPN as a workaround')
     df = pd.read_csv('./streamers.csv')
     df['Games'] = df['Games'].astype(object)
+    
     for index, row in df.iterrows():
-        
-        if(pd.isnull(row['Games'])):
-            time.sleep(random.randint(1,3))
-            try:
-                games = method2(row['User'])
+       if(pd.isnull(row['Games']) or row['Games'] == "[]"):
+            try:    
+                games = method3(row['User'])
                 df.at[index, 'Games'] = games
                 df.to_csv('streamers.csv', index=False)
             except:
-                try:
-                    games = getGames(row['User'])
-                    df.at[index, 'Games'] = games
-                    df.to_csv('streamers.csv', index=False)
-                except:
-                    print('Manual evaluation of {0} required'.format(row['User']))
                 continue
-                
+
+
+
+
     
 
     
