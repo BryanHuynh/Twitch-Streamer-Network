@@ -227,19 +227,21 @@ def assignCursorToFollower(follower: int, pagination):
 def SFS(start_streamer: str, depth: int, came_from: str, previous_list: list = []):
     global pbar
     if depth == 0: return
-    if(start_streamer in visitedStreamers): return
+    if(start_streamer in visitedStreamers and depth != max_depth): return
     
     l1 = streamerToFollowersToStreamers(start_streamer)
-    list = l1 + previous_list
-
+    l2 = streamerToFollowersToStreamers(start_streamer)
+    list = l1 + l2 + previous_list
+    
     fill_streamers_json(list)
-
     bridgeWithCount = countListInstancesOrdered(list, filter = 4)
     bridgeWithCount = filter_streamer_list_by_follower_counter(bridgeWithCount, min_follower_count)
+    
     if(len(bridgeWithCount.keys()) == 0): 
-        SFS(start_streamer, depth, came_from, previous_list = list)
+        SFS(start_streamer, depth, came_from, previous_list)
+        return
 
-    #print(bridgeWithCount)
+    
     if(depth == max_depth):
         print(bridgeWithCount.keys())
         pbar = tqdm(total = len(bridgeWithCount.keys()))
@@ -251,7 +253,8 @@ def SFS(start_streamer: str, depth: int, came_from: str, previous_list: list = [
     dataframes.append(df_local)
 
     for streamer in bridgeWithCount.keys():
-        pbar.update(1)
+        if(depth == max_depth): # only affects top recursive level
+            pbar.update(1)
         try:
             SFS(streamer, depth - 1, came_from + ' <- ' + start_streamer)
         except Exception as e:
