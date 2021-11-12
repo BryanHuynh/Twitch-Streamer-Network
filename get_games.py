@@ -56,16 +56,6 @@ def getGames(streamer: str) -> list:
 def method3(streamer: str):
     url = get_url_m3(streamer)
     page_soup = souper(url)
-    expression = 'https?://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))[\w]*'
-    href = re.search(expression, str(page_soup))
-    while(href is not None):
-        print(href.group(0))
-        page_soup = souper(href.group(0))
-        #print(page_soup)
-        expression = 'https?://[^\s()<>]+(?:\([\w\d]+\)|([^[:punct:]\s]|/))[\w]*'
-        href = re.search(expression, str(page_soup))
-
-    print(href.group(0))
     tags = page_soup.find_all('span', {'class':'barname'})
     games = []
     for row in tags[:5]:

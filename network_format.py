@@ -27,7 +27,7 @@ def stringToArray(string):
     return array
 
 def getTopGame(string):
-    if(type(string) == float):
+    if(type(string) == float or string == '[]'):
         return 'other'
 
     array = stringToArray(string)
