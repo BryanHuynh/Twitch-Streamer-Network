@@ -5,19 +5,39 @@ from networkx.algorithms.community import greedy_modularity_communities
 import networkx.algorithms.community as nx_comm
 import sys
 import pandas as pd
+from pprint import pprint
 
 
 
 def main():
-    edges_df = pd.read_csv('./Edges.csv')
-    nodes_df = pd.read_csv('./Nodes.csv')
-    G = nx.from_pandas_edgelist(edges_df, source='Source', target='Target', edge_attr='Weight')
+    df = pd.read_csv('./nodes_with_top_games.csv')
+    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
     communities = list(greedy_modularity_communities(G, 'Weight'))
+    #pprint(communities)
     print(nx_comm.modularity(G, communities))
+    communitiesBasedOnGame = generateCommunitiesBasedOnTopGames()
+    print(nx_comm.modularity(G, communitiesBasedOnGame, weight='Weight'))
 
-    G2 = nx.from_pandas_edgelist(nodes_df, source='Source', target='Target', edge_attr='Top Game')
 
+def generateCommunitiesBasedOnTopGames():
+    df = pd.read_csv('./nodes_with_top_games.csv')
+    communities = {}
+    for index, row  in df.iterrows():
+        if row['Source Top Game'] not in communities:
+            communities[row['Source Top Game']] = []
+        communities[row['Source Top Game']].append(row['Source']) if row['Source'] not in communities[row['Source Top Game']] else None
+
+        if row['Target Top Game'] not in communities:
+            communities[row['Target Top Game']] = []
+        communities[row['Target Top Game']].append(row['Target']) if row['Target'] not in communities[row['Target Top Game']] else None
+
+    communities_as_frozenset = []
+    for key, value in communities.items():
+        communities_as_frozenset.append(frozenset(value))
+
+    return communities_as_frozenset
 
 
 if __name__ == '__main__':
     main()
+
