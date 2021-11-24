@@ -39,11 +39,13 @@ def node_csv():
     indices = []
     names = []
     games = []
+    languages = []
     for index, row in df.iterrows():
         indices.append(index)
         names.append(row['User'])
         games.append(getTopGame(row['Games']))
-    ret = pd.DataFrame({'Id': indices, 'Label': names, 'Top Game': games})
+        languages.append(row['language'])
+    ret = pd.DataFrame({'Id': indices, 'Label': names, 'Top Game': games, 'Language': languages})
     ret.to_csv('Nodes.csv', index=False)
     return ret
 

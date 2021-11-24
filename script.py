@@ -21,14 +21,14 @@ config = dotenv_values('.env')
 visitedStreamers = {}
 visitedFollowers = {}
 dataframes = []
-max_depth = 20
+max_depth = 5
 streamers_json = {}
 streamers_json_by_id = {} 
 pbar = None
 SFS_count = 0
 streamer_follower_count = {}
 pbar_set_flag = False
-min_follower_count = 450000
+min_follower_count = 100
 headers = {'Client-Id': config['client_id'], 'Authorization': config['app_access_token']}
 
 
@@ -134,7 +134,7 @@ def getNameByID(follower_id: int):
         print(e)
         return getNameByID(follower_id)
     
-    return req.json()['data'][0]['display_name']
+    return req.json()['data'][0]['login']
 
 def is_partnered(streamer: str):
     if(streamer in streamers_json):
@@ -190,8 +190,10 @@ def streamerToFollowersToStreamers(streamer: str) -> dict:
             user = user_follows_data[0]['from_id']
             if('pagination' in user_follows_Json):
                 assignCursorToFollower(user, user_follows_Json['pagination'])
+        
         for i in range(0, len(user_follows_data)):
-            alsoFollows = user_follows_data[i]['to_name']
+            alsoFollows = user_follows_data[i]['to_login']
+            # print(alsoFollows)
             if(alsoFollows == streamer): 
                 continue
             list.append(alsoFollows)
@@ -234,7 +236,7 @@ def SFS(start_streamer: str, depth: int, came_from: str, previous_list: list = [
     list = l1 + l2 + previous_list
     
     fill_streamers_json(list)
-    bridgeWithCount = countListInstancesOrdered(list, filter = 4)
+    bridgeWithCount = countListInstancesOrdered(list, filter = 5)
     bridgeWithCount = filter_streamer_list_by_follower_counter(bridgeWithCount, min_follower_count)
     
     if(len(bridgeWithCount.keys()) == 0): 
