@@ -40,6 +40,7 @@ def plot_deg_dist_and_fit(G, bins):
     fit = pl.Fit(deg, xmin=min(deg), xmax=max(deg))
     print('gamma= ',fit.power_law.alpha)
     fit.power_law.plot_pdf()
+    plt.savefig('BA.png')
 
 def main(): 
     df = pd.read_csv('./nodes_with_top_games.csv')

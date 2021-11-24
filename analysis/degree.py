@@ -5,14 +5,14 @@ from networkx.algorithms.community import greedy_modularity_communities
 import networkx.algorithms.community as nx_comm
 import sys
 import pandas as pd
+import powerlaw as pl
 from pprint import pprint
 
 def draw_degree_distribution(G, title):
     N = len(G)
     L = G.size()
     degrees = [G.degree(node) for node in G]
-    # alternate form, maybe less convenient
-    # degrees = list(dict(G.degree()).values())
+
     kmin = min(degrees)
     kmax = max(degrees)
 
@@ -25,7 +25,7 @@ def draw_degree_distribution(G, title):
     print("Minimum degree: ", kmin)
     print("Maximum degree: ", kmax)
 
-    bin_edges = np.logspace(np.log10(kmin), np.log10(kmax)+1)
+    bin_edges = np.logspace(np.log10(kmin), np.log10(kmax)+1, 40)
 
     # histogram the data into these bins
     density, _ = np.histogram(degrees, bins=bin_edges, density=True)
@@ -45,17 +45,21 @@ def draw_degree_distribution(G, title):
     ax.spines['top'].set_visible(False)
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
+
+    fit = pl.Fit(degrees, xmin=kmin, xmax=kmax)
+    fit.power_law.plot_pdf()
+
     fig.savefig("{}.png".format(title))
     return (x, density)
 
 if __name__ == "__main__":
     df = pd.read_csv(sys.argv[1])
     G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
-    # degree distribution in reference to P(k) and k plot it 
-   
+
     fig = plt.figure(figsize=(16,16))
     nx.draw_circular(G, node_size = 40)
     plt.savefig("Connections_circular.png")
+
     x, density = draw_degree_distribution(G, "Degree_Distribution")
 
 

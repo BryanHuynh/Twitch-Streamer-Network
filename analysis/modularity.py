@@ -22,6 +22,8 @@ def main():
     print("based on language: {}".format(nx_comm.modularity(G, communitiesBasedOnLanguage, weight='Weight')))
     communitiesBasedOnSharedLanguageAndGame = generateCommunitiesBasedOnSharedLanguageAndGame()
     print("based on shared language and game: {}".format(nx_comm.modularity(G, communitiesBasedOnSharedLanguageAndGame, weight='Weight')))
+    connected_components = list(nx.connected_components(G))
+    print("number of connected_components: {}".format(len(connected_components)))
 
 
 def generateCommunitiesBasedOnTopGames():
