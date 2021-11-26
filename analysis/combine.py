@@ -11,6 +11,7 @@ def main():
         name = row['Label']
         language = row["Language"]
 
+
         edges_df.loc[edges_df['Source'] == id, 'Source Top Game'] = top_game
         edges_df.loc[edges_df['Target'] == id, 'Target Top Game'] = top_game
 
@@ -18,12 +19,12 @@ def main():
         edges_df.loc[edges_df['Source'] == id, 'Source Language'] = language
         edges_df.loc[edges_df['Target'] == id, 'Target Language'] = language
 
-
         edges_df.loc[edges_df['Source'] == id, 'Source'] = name
         edges_df.loc[edges_df['Target'] == id, 'Target'] = name
 
         
-    print(edges_df)
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+        print(edges_df)
     # write the nodes file to a csv
     edges_df.to_csv("./analysis/nodes_with_top_games.csv", index=False)
 

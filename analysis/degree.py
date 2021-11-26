@@ -25,7 +25,7 @@ def draw_degree_distribution(G, title):
     print("Minimum degree: ", kmin)
     print("Maximum degree: ", kmax)
 
-    bin_edges = np.logspace(np.log10(kmin), np.log10(kmax)+1, 40)
+    bin_edges = np.logspace(np.log10(kmin), np.log10(kmax)+1, 400)
 
     # histogram the data into these bins
     density, _ = np.histogram(degrees, bins=bin_edges, density=True)
@@ -54,14 +54,14 @@ def draw_degree_distribution(G, title):
 
 if __name__ == "__main__":
     df = pd.read_csv(sys.argv[1])
-    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
+    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight' , create_using=nx.DiGraph())
 
     fig = plt.figure(figsize=(16,16))
     nx.draw_circular(G, node_size = 40)
     plt.savefig("Connections_circular.png")
 
     x, density = draw_degree_distribution(G, "Degree_Distribution")
-
+    
 
 
 
