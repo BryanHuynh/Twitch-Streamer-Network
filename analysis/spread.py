@@ -112,6 +112,7 @@ if __name__ == "__main__":
         for i in range(1, 200):
             rand_data[i] = spread_data_random(G, i)
         plt.plot(list(rand_data.keys()), list(rand_data.values()))
+        # draw best fit line
         # make y axis start a 0
         plt.ylim(0, 1)
         plt.xlabel('Start Size')
