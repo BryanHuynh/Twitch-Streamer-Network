@@ -24,6 +24,10 @@ def main():
     print("based on shared language and game: {}".format(nx_comm.modularity(G, communitiesBasedOnSharedLanguageAndGame, weight='Weight')))
     connected_components = list(nx.connected_components(G))
     print("number of connected_components: {}".format(len(connected_components)))
+    null_df = pd.read_csv('./null_model.csv')
+    null_G = nx.from_pandas_edgelist(null_df, source='Source', target='Target')
+    null_communities = list(greedy_modularity_communities(null_G))
+    print("null_model: {}".format(nx_comm.modularity(null_G, null_communities)))
 
 
 def generateCommunitiesBasedOnTopGames():

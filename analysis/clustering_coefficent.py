@@ -46,8 +46,8 @@ def draw_clustering_coefficent(G, title):
 
 if __name__ == "__main__":
     df = pd.read_csv(sys.argv[1])
-    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
-    draw_clustering_coefficent(G, "clustering_coefficent")
+    G = nx.from_pandas_edgelist(df, source='Source', target='Target')
+    draw_clustering_coefficent(G, sys.argv[2])
 
     # plot clustering coefficent for G
     
