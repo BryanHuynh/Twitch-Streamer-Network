@@ -61,7 +61,7 @@ def main():
     plt.xlabel(r"degree, $k$")
     plt.ylabel(r"$P(k)$")
     despine()
-    plot.savefig('BA.png')
+
 
 
 

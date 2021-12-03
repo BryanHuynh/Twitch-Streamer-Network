@@ -6,7 +6,6 @@ import networkx.algorithms.community as nx_comm
 import sys
 import pandas as pd
 from pprint import pprint
-import powerlaw as pl
 
 
 
@@ -19,6 +18,45 @@ def get_clustering_degree_dictionary(G):
         else:
             degree_dict[degree] = [nx.clustering(G, node)]
     return degree_dict
+
+def draw_clustering_coefficent_ER_models(title):
+    null_model = pd.read_csv("./ER_models/erdos_renyi_graph_0.csv")
+    # create graph for each null model, using first column and second columns as edges
+    null_model_graph = nx.from_pandas_edgelist(null_model, source='Source', target='Target', create_using=nx.DiGraph())
+    avg_null_clusterings = get_clustering_degree_dictionary(null_model_graph)
+    for i in range(1,100):
+        null_model = pd.read_csv("./ER_models/erdos_renyi_graph_{}.csv".format(i))
+        # convert to graph
+        null_model_graph = nx.from_pandas_edgelist(null_model, source='Source', target='Target', create_using=nx.DiGraph())
+        null_model_clusterings = get_clustering_degree_dictionary(null_model_graph)
+        # go through every key in average_null_clusterings and append to value of null_model_clusterings of same key
+        for key in null_model_clusterings:
+            if(key in avg_null_clusterings):
+                # concat list_elements
+                avg_null_clusterings[key] += null_model_clusterings[key]
+            else:
+                avg_null_clusterings[key] = null_model_clusterings[key]
+    # go through every key in avg_null_clusterings and get the average of the values
+
+    for key in avg_null_clusterings:
+        avg_null_clusterings[key] = np.mean(avg_null_clusterings[key])/100
+
+    # plot a graph of degree vs average clustering coefficient on a log scale. set x axis max to kmax
+    # make y axis max be 1
+
+    plt.figure(figsize=(10,10))
+
+    plt.loglog(avg_null_clusterings.keys(), avg_null_clusterings.values(), 'ro')
+    plt.xlabel('Degree')
+    plt.ylabel('Average Clustering Coefficient')
+    plt.ylim(0,1)
+    # get line of best fit for the data
+    x = np.array(list(avg_null_clusterings.keys()))
+    y = np.array(list(avg_null_clusterings.values()))
+    plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)))
+    plt.savefig(title + ".png")
+
+    return (x,y)
 
 def draw_clustering_coefficent_null_models(title):
     null_model = pd.read_csv("./null_models/null_model_0.csv")
@@ -53,10 +91,13 @@ def draw_clustering_coefficent_null_models(title):
     plt.ylabel('Average Clustering Coefficient')
     plt.ylim(0,1)
 
+    x = np.array(list(avg_null_clusterings.keys()))
+    y = np.array(list(avg_null_clusterings.values()))
+    # line of best fit degree 1
+    plt.plot(np.unique(x), np.poly1d(np.polyfit(x, y, 1))(np.unique(x)))
     plt.title(title)
     plt.savefig(title + ".png")
-
-    return avg_null_clusterings
+    return (x,y)
     
 
 
@@ -88,16 +129,20 @@ def draw_clustering_coefficent(G, title):
     print("kmax: {}".format(kmax))
 
     # get average clustering coefficient of null model 
-    average_null_model_clusterings = draw_clustering_coefficent_null_models("Null_Model_clustering_coefficient")
+    null_x, null_y = draw_clustering_coefficent_null_models("Null_Model_clustering_coefficient")
+    er_x, er_y = draw_clustering_coefficent_ER_models("ER_Model_clustering_coefficient")
     # plot a graph of degree vs average clustering coefficient on a log scale. set x axis max to kmax
 
     plt.figure(figsize=(10,10))
-    plt.loglog(average_null_model_clusterings.keys(), average_null_model_clusterings.values(), 'ro')
-    plt.loglog(degree_avg_clustering.keys(), degree_avg_clustering.values(), 'bo')
+    plt.plot(np.unique(null_x), np.poly1d(np.polyfit(null_x, null_y, 1))(np.unique(null_x)), 'g', label='Null_Model_clustering_coefficient')
+    plt.plot(np.unique(er_x), np.poly1d(np.polyfit(er_x, er_y, 1))(np.unique(er_x)), 'r', label='ER_Model_clustering_coefficient')
+    plt.loglog(degree_avg_clustering.keys(), degree_avg_clustering.values(), 'bo', label='Average Clustering Coefficient')
+
     plt.xlabel('Degree')
     plt.ylabel('Average Clustering Coefficient')
     plt.style.use('classic')
-    
+    # show legend
+    plt.legend(loc='best')
 
     plt.ylim(0,1)
     plt.xlim(kmin,kmax + 2)
@@ -145,6 +190,7 @@ if __name__ == "__main__":
         sys.exit(1)
     df = pd.read_csv(sys.argv[1])
     G = nx.from_pandas_edgelist(df, source='Source', target='Target', create_using=nx.DiGraph())
+    #draw_clustering_coefficent_ER_models("ER_Model_clustering_coefficient")
     draw_clustering_coefficent(G, sys.argv[2])
     get_average_clustering(G)
     
