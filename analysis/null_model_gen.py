@@ -43,6 +43,10 @@ if __name__ == "__main__":
 
     for i in range(0, 100):
       null_model = degree_perserving_swap(G, 100)
-      nx.write_edgelist(null_model, 'null_models/null_model_' + str(i) + '.csv', delimiter=',')
-
+      # convert graph to pandas dataframe
+      null_model_df = pd.DataFrame(null_model.edges(data=True))
+      # rename columns
+      null_model_df.columns = ['Source', 'Target', 'Weight']
+      # write to file
+      null_model_df.to_csv('null_models/null_model_' + str(i) + '.csv', index=False)
     

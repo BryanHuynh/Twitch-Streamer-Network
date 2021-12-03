@@ -6,96 +6,148 @@ import networkx.algorithms.community as nx_comm
 import sys
 import pandas as pd
 from pprint import pprint
+import powerlaw as pl
+
+
+
+def get_clustering_degree_dictionary(G):
+    degree_dict = {}
+    for node in G.nodes():
+        degree = G.degree(node)
+        if degree in degree_dict:
+            degree_dict[degree].append(nx.clustering(G, node))
+        else:
+            degree_dict[degree] = [nx.clustering(G, node)]
+    return degree_dict
+
+def draw_clustering_coefficent_null_models(title):
+    null_model = pd.read_csv("./null_models/null_model_0.csv")
+    # create graph for each null model, using first column and second columns as edges
+    null_model_graph = nx.from_pandas_edgelist(null_model, source='Source', target='Target', create_using=nx.DiGraph())
+    avg_null_clusterings = get_clustering_degree_dictionary(null_model_graph)
+    for i in range(1,100):
+        null_model = pd.read_csv("null_models/null_model_{}.csv".format(i))
+        # convert to graph
+        null_model_graph = nx.from_pandas_edgelist(null_model, source='Source', target='Target', create_using=nx.DiGraph())
+        null_model_clusterings = get_clustering_degree_dictionary(null_model_graph)
+        # go through every key in average_null_clusterings and append to value of null_model_clusterings of same key
+        for key in null_model_clusterings:
+            if(key in avg_null_clusterings):
+                # concat list_elements
+                avg_null_clusterings[key] += null_model_clusterings[key]
+            else:
+                avg_null_clusterings[key] = null_model_clusterings[key]
+    # go through every key in avg_null_clusterings and get the average of the values
+
+    for key in avg_null_clusterings:
+        avg_null_clusterings[key] = np.mean(avg_null_clusterings[key])/100
+    
+
+    # plot a graph of degree vs average clustering coefficient on a log scale. set x axis max to kmax
+    # make y axis max be 1
+
+    plt.figure(figsize=(10,10))
+
+    plt.loglog(avg_null_clusterings.keys(), avg_null_clusterings.values(), 'ro')
+    plt.xlabel('Degree')
+    plt.ylabel('Average Clustering Coefficient')
+    plt.ylim(0,1)
+
+    plt.title(title)
+    plt.savefig(title + ".png")
+
+    return avg_null_clusterings
+    
+
+
 
 def draw_clustering_coefficent(G, title):
     N = len(G)
     L = G.size()
-    clusterings = nx.clustering(G).values()
-    # convert clustering to a numpy array
-    
+    # get max degree of graph
+    # make a dictionary where the key is the degree and the values are the clustering coefficient of nodes with that degree
+    degree_dict = {}
+    for node in G.nodes():
+        degree = G.degree(node)
+        if degree in degree_dict:
+            degree_dict[degree].append(nx.clustering(G, node))
+        else:
+            degree_dict[degree] = [nx.clustering(G, node)]
+
+    # go through degree_dict and get the average clustering coefficient for each degree
+    degree_avg_clustering = {}
+    for degree in degree_dict:
+        degree_avg_clustering[degree] = np.average(degree_dict[degree])
+
     # alternate form, maybe less convenient
-    kmin = min(clusterings)
-    kmax = max(clusterings)
+    degrees = [G.degree(node) for node in G]
 
-    print(kmin, kmax)
+    kmin = min(degrees)
+    kmax = max(degrees)
+    print("kmin: {}".format(kmin))
+    print("kmax: {}".format(kmax))
 
-    bin_edges = np.linspace((kmin), (kmax)+1)
-    # histogram the data into these bins
-    density, x = np.histogram(list(clusterings), bins=bin_edges, density=True)
+    # get average clustering coefficient of null model 
+    average_null_model_clusterings = draw_clustering_coefficent_null_models("Null_Model_clustering_coefficient")
+    # plot a graph of degree vs average clustering coefficient on a log scale. set x axis max to kmax
 
-
-    x = ((bin_edges[1:] + bin_edges[:-1])/2)
+    plt.figure(figsize=(10,10))
+    plt.loglog(average_null_model_clusterings.keys(), average_null_model_clusterings.values(), 'ro')
+    plt.loglog(degree_avg_clustering.keys(), degree_avg_clustering.values(), 'bo')
+    plt.xlabel('Degree')
+    plt.ylabel('Average Clustering Coefficient')
+    plt.style.use('classic')
     
-    fig = plt.figure(figsize=(10,10))
-    
-    plt.loglog(x, density, marker='o', linestyle='none')
-    plt.xlabel(r"Clustering $k$", fontsize=16)
-    plt.ylabel(r"$P(k)$", fontsize=16)
 
+    plt.ylim(0,1)
+    plt.xlim(kmin,kmax + 2)
 
-
-    # remove right and top boundaries because they're ugly
     ax = plt.gca()
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
-    fig.savefig("{}.png".format(title))
-    return (x, density)
+
+   
+    plt.title(title)
+    plt.savefig(title + ".png")    
 
 
-def draw_clustering_coefficent_with_null(G,G_null,title):
+def get_average_clustering(G):
     N = len(G)
     L = G.size()
-    clusterings = nx.clustering(G).values()
-    clusterings_null = nx.clustering(G_null).values()
+    clusterings = nx.average_clustering(G)
+    print("Average clustering: {}".format(clusterings))
 
-    # alternate form, maybe less convenient
-    kmin_real = min(clusterings)
-    kmax_real = max(clusterings)
-    kmin_null = min(clusterings_null)
-    kmax_null = max(clusterings_null)
-
-    kmin = min(kmin_real, kmin_null)
-    kmax = max(kmax_real, kmax_null)
-    
-    print(kmin, kmax)
-
-    bin_edges = np.linspace((kmin), (kmax)+1)
-    # histogram the data into these bins
-    density, x = np.histogram(list(clusterings), bins=bin_edges, density=True)
-    density_null, x_null = np.histogram(list(clusterings_null), bins=bin_edges, density=True)
-
-    x = ((bin_edges[1:] + bin_edges[:-1])/2)
-
-    
-    fig = plt.figure(figsize=(10,10))
-    
-    plt.loglog(x, density, marker='o', linestyle='none',color='blue')
-    plt.loglog(x, density_null, marker='o', linestyle='none',color='red')
-
-    plt.xlabel(r"Clustering $k$", fontsize=16)
-    plt.ylabel(r"$P(k)$", fontsize=16)
+    # load in 100 null models from ./null_models/
+    # calculate the clustering coefficient for each null model
+    # then average them out
+    # then plot the average clustering coefficient
+    null_model = pd.read_csv("./null_models/null_model_0.csv")
+    # create graph for each null model, using first column and second columns as edges
+    null_model_graph = nx.from_pandas_edgelist(null_model, source='Source', target='Target', create_using=nx.DiGraph())
+    avg_null_clusterings = nx.average_clustering(null_model_graph)
+    for i in range(1,100):
+        null_model = pd.read_csv("null_models/null_model_{}.csv".format(i))
+        # convert to graph
+        null_model_graph = nx.from_pandas_edgelist(null_model, source='Source', target='Target', create_using=nx.DiGraph())
+        null_model_clusterings = nx.average_clustering(null_model_graph)
+        # add every i element from null_model_clusterings to avg_null_clusterings
+        avg_null_clusterings += null_model_clusterings
+    avg_null_clusterings = avg_null_clusterings/100
+    print("Average clustering of null models: {}".format(avg_null_clusterings))
 
 
 
-    # remove right and top boundaries because they're ugly
-    ax = plt.gca()
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ax.yaxis.set_ticks_position('left')
-    ax.xaxis.set_ticks_position('bottom')
-    fig.savefig("{}.png".format(title))
-    return (x, density)
 if __name__ == "__main__":
     if (len(sys.argv) != 3):
         print("Usage: {} <input_file> <output_file>".format(sys.argv[0]))
         sys.exit(1)
     df = pd.read_csv(sys.argv[1])
-    G = nx.from_pandas_edgelist(df, source='Source', target='Target')
-    df_null = pd.read_csv('./null_model.csv')
-    G_null = nx.from_pandas_edgelist(df_null, source='Source', target='Target')
-    draw_clustering_coefficent_with_null(G,G_null,sys.argv[2])
+    G = nx.from_pandas_edgelist(df, source='Source', target='Target', create_using=nx.DiGraph())
+    draw_clustering_coefficent(G, sys.argv[2])
+    get_average_clustering(G)
+    
 
 
     # plot clustering coefficent for G

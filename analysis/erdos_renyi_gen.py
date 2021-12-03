@@ -15,5 +15,9 @@ if __name__ == "__main__":
     # generate 100 erdos Renyi graphs and save them to ER_models folder
     for i in range(100):
         ER = (nx.erdos_renyi_graph(n_nodes, n_edges/n_nodes))
-        nx.write_edgelist(ER, 'ER_models/ER_model_' + str(i) + '.txt')
+        ER_df = pd.DataFrame(ER.edges(data=True))
+        # rename columns
+        ER_df.columns = ['Source', 'Target', 'Weight']
+        # save to file
+        ER_df.to_csv('ER_models/ER_model_' + str(i) + '.csv', index=False)
 
