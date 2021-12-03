@@ -41,7 +41,8 @@ if __name__ == "__main__":
     df = pd.read_csv(sys.argv[1])
     G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
 
-    null_model = degree_perserving_swap(G, 100)
-    if(null_model != -1):
-      nx.write_edgelist(null_model, 'null_model.csv', delimiter=',')
+    for i in range(0, 100):
+      null_model = degree_perserving_swap(G, 100)
+      nx.write_edgelist(null_model, 'null_models/null_model_' + str(i) + '.csv', delimiter=',')
+
     

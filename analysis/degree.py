@@ -39,7 +39,7 @@ def draw_degree_distribution(G, title):
     log_be = np.log10(bin_edges)
     x = 10**((log_be[1:] + log_be[:-1])/2)
 
-    plt.loglog(x, density, marker='o', linestyle='none')
+    plt.loglog(x, density, marker='o', linestyle='none', color='r')
     plt.xlabel(r"degree $k$", fontsize=16)
     plt.ylabel(r"$P(k)$", fontsize=16)
 
@@ -50,39 +50,67 @@ def draw_degree_distribution(G, title):
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
 
-    #fit = pl.Fit(degrees, xmin=kmin, xmax=kmax)
-    #fit.power_law.plot_pdf()
+    # draw polynomial fit
+    fit = np.polyfit(x, density, 1)
+    fit_fn = np.poly1d(fit)
+    plt.plot(x, fit_fn(x), '--k')
 
     fig.savefig("{}.png".format(title))
     return (x, density)
 
-def degree_perserving_swap(graph, num_iterations):
-  if num_iterations < 1:
-    return -1
-  # make a new empty directional graph
-  G = nx.DiGraph()
-  # make a dictionary where the keys are the nodes and the values are the degrees
-  stubs = dict(graph.degree())
-  # loop through every node in stubs
-  for node in stubs:
-    # for loop through the range of the degree of the node
-    length = stubs[node]
-    for i in range(0, length):
-      # get a random node in stubs where the value is > 0 and not the node
-      try:
-        random_node = random.choice([x for x in stubs if stubs[x] > 0 and x != node])
-      except:
-        return degree_perserving_swap(graph, num_iterations - 1)
-      # add an edge between the node and the random node
-      G.add_edge(node, random_node)
-      # decrement the degree of the random node
-      stubs[random_node] -= 1
-      # decrement the degree of the node
-      stubs[node] -= 1
-  # check that all stubs values are zeros
-  if all(value != 0 for value in stubs.values()):
-    return degree_perserving_swap(graph, num_iterations - 1)
-  return G
+
+def draw_degree_distribution_with_null(G, G_null, title):
+    N = len(G)
+    L = G.size()
+    degrees = [G.degree(node) for node in G]
+    degrees_null = [G_null.degree(node) for node in G]
+
+    kmin = min(degrees)
+    kmax = max(degrees)
+
+    print("Number of nodes: ", N)
+    print("Number of edges: ", L)
+    print()
+    print("Average degree: ", 2*L/N)
+    print("Average degree (alternate calculation)", np.mean(degrees))
+    print()
+    print("Minimum degree: ", kmin)
+    print("Maximum degree: ", kmax)
+
+    bin_edges = np.logspace(np.log10(kmin), np.log10(40)+1)
+
+    # histogram the data into these bins
+    density, _ = np.histogram(degrees, bins=bin_edges, density=True)
+    density_null, _ = np.histogram(degrees_null, bins=bin_edges, density=True)
+
+    fig = plt.figure(figsize=(10,10))
+
+    # "x" should be midpoint (IN LOG SPACE) of each bin
+    log_be = np.log10(bin_edges)
+    x = 10**((log_be[1:] + log_be[:-1])/2)
+
+    plt.loglog(x, density, marker='o', linestyle='none', color='r', label='Twitch Streamers')
+    plt.loglog(x, density_null, marker='o', linestyle='none', color='b', label='null model')
+    plt.legend(loc="upper right")
+    plt.title("Degree Distribution")
+    plt.xlabel(r"degree $k$", fontsize=16)
+    plt.ylabel(r"$P(k)$", fontsize=16)
+
+    # remove right and top boundaries because they're ugly
+    ax = plt.gca()
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.yaxis.set_ticks_position('left')
+    ax.xaxis.set_ticks_position('bottom')
+
+    fit = pl.Fit(degrees, xmin=min(degrees), xmax=max(degrees))
+    print('gamma fit: ', fit.power_law.alpha)
+    fit.power_law.plot_pdf(color='red', linestyle='--', label='gamma fit')
+
+    fig.savefig("{}.png".format(title))
+    return (x, density)
+
+
 
 
 if __name__ == "__main__":
@@ -91,11 +119,9 @@ if __name__ == "__main__":
     G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
 
     x, density = draw_degree_distribution(G, "Degree_Distribution")
-    null_model = degree_perserving_swap(G, 100)
-    if(null_model != -1):
-      draw_degree_distribution(null_model, "Degree_Distribution_Null_Model")
-      # save null model to to_csv
-      nx.write_edgelist(null_model, 'null_model.csv', data=True, delimiter=',')
+    df_null = pd.read_csv(sys.argv[2])
+    G_null = nx.from_pandas_edgelist(df_null, source='Source', target='Target')
+    x, density_null = draw_degree_distribution_with_null(G, G_null, "Degree_Distribution_with_null")
     
 
 
