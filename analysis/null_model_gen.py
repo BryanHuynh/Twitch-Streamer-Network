@@ -13,35 +13,46 @@ def degree_perserving_swap(graph, num_iterations):
     return -1
   # make a new empty directional graph
   G = nx.DiGraph()
-  # make a dictionary where the keys are the nodes and the values are the degrees
-  stubs = dict(graph.degree())
+  # loop through all nodes in graph 
+  stubs = {}
+  for node in graph.nodes():
+    # get in and out degree of node
+    in_degree = graph.in_degree(node)
+    out_degree = graph.out_degree(node)
+    stubs[node] = {'in':in_degree, 'out':out_degree}
+
   # loop through every node in stubs
   for node in stubs:
     # for loop through the range of the degree of the node
-    length = stubs[node]
+    length = stubs[node]['out']
     for i in range(0, length):
       # get a random node in stubs where the value is > 0 and not the node
       try:
-        random_node = random.choice([x for x in stubs if stubs[x] > 0 and x != node])
+        random_node = random.choice([x for x in stubs if stubs[x]['in'] > 0 and x != node])
       except:
         return degree_perserving_swap(graph, num_iterations - 1)
       # add an edge between the node and the random node
       G.add_edge(node, random_node)
       # decrement the degree of the random node
-      stubs[random_node] -= 1
+      stubs[random_node]['in'] -= 1
       # decrement the degree of the node
-      stubs[node] -= 1
-  # check that all stubs values are zeros
-  if all(value != 0 for value in stubs.values()):
-    return degree_perserving_swap(graph, num_iterations - 1)
+      stubs[node]['out'] -= 1
+
+  # check that all stubs values in and out are zeros
+  for node in stubs:
+    if stubs[node]['in'] != 0 or stubs[node]['out'] != 0:
+        return degree_perserving_swap(graph, num_iterations - 1)
+  
+
   return G
 
 if __name__ == "__main__":
     print('Starting')
     df = pd.read_csv(sys.argv[1])
-    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
+    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight', create_using=nx.DiGraph())
 
     for i in range(0, 100):
+      print('Iteration: ' + str(i))
       null_model = degree_perserving_swap(G, 100)
       # convert graph to pandas dataframe
       null_model_df = pd.DataFrame(null_model.edges(data=True))
