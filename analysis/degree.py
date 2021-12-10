@@ -66,6 +66,9 @@ def get_degree_random_model():
     df = pd.read_csv('./ER_models/erdos_renyi_graph_0.csv')
     G = nx.from_pandas_edgelist(df, source='Source', target='Target')
     degrees = [G.degree(node) for node in G]
+    # print number of edges and nodes
+    print("Number of nodes random: ", len(G))
+    print("Number of edges random: ", G.size())
     for i in range(1,100):
         df = pd.read_csv('./ER_models/erdos_renyi_graph_{}.csv'.format(i))
         G = nx.from_pandas_edgelist(df, source='Source', target='Target')
@@ -200,6 +203,35 @@ def distrubution(G):
                    xlabel='degree',
                    ylabel='probability')
 
+def weighted_distibution(G):
+    # get weights of every edge of the network
+    weights = [G[u][v]['Weight'] for u,v in G.edges()]
+    # print average weight
+    print("Average weight: ", np.mean(weights))
+    figsize = (10,10)
+    plt.figure(figsize=figsize)
+    pmf_network = Pmf(weights)
+
+    plt.loglog(list(pmf_network.GetDict().keys()), list(pmf_network.GetDict().values()), 'o', linestyle='none', color='b', label='Twitch Streamers Weighted')
+
+    basis, coeffs = smoothfit.fit1d(list(pmf_network.GetDict().keys()), list(pmf_network.GetDict().values()), 0, max(weights), 1000, degree=1, lmbda=170)
+    plt.loglog(basis.mesh.p[0], coeffs[basis.nodal_dofs[0]], "-.", label="network fit", color='r')
+
+    plt.ylim(10e-5, 1)
+    plt.xlim(1, max(weights) + 50)
+
+    ax = plt.gca()
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.yaxis.set_ticks_position('left')
+    ax.xaxis.set_ticks_position('bottom')
+    plt.title("Weight Distribution")
+    thinkplot.Save(root='Weighted_distribution',
+                   xlabel='weight',
+                   ylabel='probability of weight')
+
+
+
 
 
 if __name__ == "__main__":
@@ -211,7 +243,9 @@ if __name__ == "__main__":
     #df_null = pd.read_csv(sys.argv[2])
     #G_null = nx.from_pandas_edgelist(df_null, source='Source', target='Target')
     #draw_degree_distribution_with_null(G, "Degree_Distribution_with_null")
-    distrubution(G)
+    #distrubution(G)
+    #weighted_distibution(G)
+    get_degree_random_model()
 
 
 

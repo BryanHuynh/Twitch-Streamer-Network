@@ -5,35 +5,14 @@ import sys
 import pandas as pd
 import powerlaw as pl
 from pprint import pprint
+from networkx.algorithms.community import greedy_modularity_communities
+import networkx.algorithms.community as nx_comm
+from networkx.algorithms.community import k_clique_communities
 import itertools
-motifs = {
-    # B -> A, B -> C
-    'S1': (nx.DiGraph([ ('B','A'), ('B','C') ])),
-    # B -> A, C -> B
-    'S2': (nx.DiGraph([ ('B','A'), ('C','B') ])),
-    # B -> A, C -> B, B -> C
-    'S3': (nx.DiGraph([ ('B','A'), ('C','B'), ('B','C') ])),
-    # B -> A, C -> A
-    'S4': (nx.DiGraph([ ('B','A'), ('C','A') ])),
-    # B -> A, C -> A, B -> C
-    'S5': (nx.DiGraph([ ('B','A'), ('C','A'), ('B','C') ])),
-    # B -> A, C -> A, B -> C, C -> B
-    'S6': (nx.DiGraph([ ('B','A'), ('C','A'), ('B','C'), ('C','B') ])),
-    # A -> B, B -> C, C -> B
-    'S7': (nx.DiGraph([ ('A','B'), ('B','C'), ('C','B') ])),
-    # A -> B, B -> A, C -> B, B -> C
-    'S8': (nx.DiGraph([ ('A','B'), ('B','A'), ('C','B'), ('B','C') ])),
-    # A -> B, B -> C, C -> A
-    'S9': (nx.DiGraph([ ('A','B'), ('B','C'), ('C','A') ])),
-    # A -> B, B -> A, B -> C, C -> A
-    'S10': (nx.DiGraph([ ('A','B'), ('B','A'), ('B','C'), ('C','A') ])),
-    # A -> B, B -> A, C -> B, C -> A
-    'S11': (nx.DiGraph([ ('A','B'), ('B','A'), ('C','B'), ('C','A') ])),
-    # A -> B, B -> A, C -> B, C -> A, B -> C
-    'S12': (nx.DiGraph([ ('A','B'), ('B','A'), ('C','B'), ('C','A'), ('B','C') ])),
-    # A -> B, B -> A, C -> B, C -> A, B -> C, C -> B
-    'S13': (nx.DiGraph([ ('A','B'), ('B','A'), ('C','B'), ('C','A'), ('B','C'), ('C','B') ])),
 
+motifs = {
+    # A -> B, B -> A, C -> B, C -> A, B -> C, C -> B
+    'S13': (nx.DiGraph([ ('A','B'), ('B','A'), ('C','B'), ('C','A'), ('B','C'), ('C','B') ]))
 }
 
 def mcounter(gr, mo):
@@ -85,10 +64,14 @@ if __name__ == '__main__':
     print("starting...")
     # read in the data
     df = pd.read_csv(sys.argv[1])
-    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
-
-    # generate an array of 13 possible distinct directional motif graphs of size 3
-
+    _G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight', create_using=nx.DiGraph())
+    communities = list(greedy_modularity_communities(_G, 'Weight'))
+    # get second biggest community
+    max_com = communities[1]
+    print(len(max_com))
+    # make a subgraph with max_com 
+    G = _G.subgraph(max_com)
+    
 
     # find the number of matching motifs/subgraphs in the network
     motif_counts = mcounter(G, motifs)

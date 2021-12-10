@@ -12,22 +12,34 @@ from pprint import pprint
 
 def main():
     df = pd.read_csv('./nodes_with_top_games.csv')
-    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight')
+    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr='Weight', create_using=nx.DiGraph())
     communities = list(greedy_modularity_communities(G, 'Weight'))
     #pprint(communities)
     print("based on communtity detection: {}".format(nx_comm.modularity(G, communities)))
     communitiesBasedOnGame = generateCommunitiesBasedOnTopGames()
+
     print("Based on Top Game: {}".format(nx_comm.modularity(G, communitiesBasedOnGame, weight='Weight')))
     communitiesBasedOnLanguage = generateCommunitiesBasedOnLanguages()
+
     print("based on language: {}".format(nx_comm.modularity(G, communitiesBasedOnLanguage, weight='Weight')))
     communitiesBasedOnSharedLanguageAndGame = generateCommunitiesBasedOnSharedLanguageAndGame()
+
     print("based on shared language and game: {}".format(nx_comm.modularity(G, communitiesBasedOnSharedLanguageAndGame, weight='Weight')))
-    connected_components = list(nx.connected_components(G))
-    print("number of connected_components: {}".format(len(connected_components)))
-    null_df = pd.read_csv('./null_model.csv')
-    null_G = nx.from_pandas_edgelist(null_df, source='Source', target='Target')
-    null_communities = list(greedy_modularity_communities(null_G))
-    print("null_model: {}".format(nx_comm.modularity(null_G, null_communities)))
+    average_null_model_modularity()
+
+
+def average_null_model_modularity():
+    df = pd.read_csv('./null_models/null_model_0.csv')
+    G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr=None, create_using=nx.DiGraph())
+    communities = list(greedy_modularity_communities(G, 'Weight'))
+    avg_M = nx_comm.modularity(G, communities)
+    for i in range(1,100):
+        df = pd.read_csv('./null_models/null_model_{}.csv'.format(i))
+        G = nx.from_pandas_edgelist(df, source='Source', target='Target', edge_attr=None, create_using=nx.DiGraph())
+        communities = list(greedy_modularity_communities(G, 'Weight'))
+        avg_M += nx_comm.modularity(G, communities)
+    avg_M = avg_M / 100
+    print("average modularity of null_model: {}".format(avg_M))
 
 
 def generateCommunitiesBasedOnTopGames():
